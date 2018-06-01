@@ -1,0 +1,18 @@
+/* .layout-col-to-row {
+  display: flex;
+  flex-direction: column;
+}
+
+
+@media (min-width: 576px) {}
+
+@media (min-width: 768px) {
+  .layout-col-to-row {
+    display: flex;
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 992px) {}
+
+@media (min-width: 1200px) {} */
