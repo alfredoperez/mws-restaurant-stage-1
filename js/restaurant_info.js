@@ -10,11 +10,13 @@ window.initMap = () => {
       console.error(error);
     } else {
       var map = document.getElementsByClassName('map')[0];
-      self.map = new google.maps.Map(map, {
-        zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
-      });
+      self.map = new google
+        .maps
+        .Map(map, {
+          zoom: 16,
+          center: restaurant.latlng,
+          scrollwheel: false
+        });
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
@@ -56,9 +58,9 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const address = document.getElementsByClassName('restaurant-address')[0];
   address.innerHTML = restaurant.address;
 
-  const image = document.getElementsByClassName('restaurant-img')[0];
-  image.className = 'restaurant-img'
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  const image = document.getElementsByClassName('restaurant-figure')[0];
+  var picture = DBHelper.createPictureForRestaurant(restaurant);
+  image.appendChild(picture);
 
   const cuisine = document.getElementsByClassName('restaurant-cuisine')[0];
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -118,30 +120,42 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
  */
 createReviewHTML = (review) => {
   const li = document.createElement('li');
-  li.classList.add('reviewer');
+  li
+    .classList
+    .add('reviewer');
 
   const header = document.createElement('div');
-  header.classList.add('reviewer-header');
+  header
+    .classList
+    .add('reviewer-header');
 
   const name = document.createElement('p');
-  name.classList.add('name');
+  name
+    .classList
+    .add('name');
   name.innerHTML = review.name;
   header.appendChild(name);
 
   const date = document.createElement('p');
-  date.classList.add('date');
+  date
+    .classList
+    .add('date');
   date.innerHTML = review.date;
   header.appendChild(date);
 
   li.appendChild(header);
 
   const rating = document.createElement('p');
-  rating.classList.add('rating');
+  rating
+    .classList
+    .add('rating');
   rating.innerHTML = `Rating: ${review.rating}`;
   li.appendChild(rating);
 
   const comments = document.createElement('p');
-  comments.classList.add('comments');
+  comments
+    .classList
+    .add('comments');
   comments.innerHTML = review.comments;
   li.appendChild(comments);
 
@@ -162,14 +176,14 @@ fillBreadcrumb = (restaurant = self.restaurant) => {
  * Get a parameter by name from page URL.
  */
 getParameterByName = (name, url) => {
-  if (!url)
+  if (!url) 
     url = window.location.href;
   name = name.replace(/[\[\]]/g, '\\$&');
   const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
     results = regex.exec(url);
-  if (!results)
+  if (!results) 
     return null;
-  if (!results[2])
+  if (!results[2]) 
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }

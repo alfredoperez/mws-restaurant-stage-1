@@ -41,7 +41,18 @@
   line-height: 1.1;
 }
 
-.restaurant-img {
+.restaurant-img-large {
+  border: #333333;
+  border-radius: 50px 0 50px;
+  width: 100%;
+}
+
+.restaurant-img-medium {
+  border: #333333;
+  border-radius: 50px 0 50px;
+  width: 100%;
+}
+.restaurant-img-small {
   border: #333333;
   border-radius: 50px 0 50px;
   width: 100%;

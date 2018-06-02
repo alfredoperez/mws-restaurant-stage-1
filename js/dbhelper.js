@@ -150,20 +150,57 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}`);
+    return (`images/${restaurant.photograph}-500_small.jpg`);
   }
 
+  /**
+   * Restaurant image URL.
+   */
+  static imageSrcsetForRestaurant(restaurant, size) {
+    var srcSet = size === 'large'
+      ? `images/${restaurant.photograph}-1600_1600_large_2x.jpg 2x, images/${restaurant.photograph}-800_800_large_1x.jpg`
+      : size === 'medium'
+        ? `images/${restaurant.photograph}-500_medium.jpg`
+        : `images/${restaurant.photograph}-500_small.jpg`
+    return srcSet;
+  }
+
+  static createPictureForRestaurant(restaurant) {
+    const picture = document.createElement('picture');
+
+    const largeSource = document.createElement('source');
+    largeSource.media = '(min-width:750px)';
+    largeSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'large');
+    largeSource.classList.add('restaurant-img-large');
+    picture.appendChild(largeSource);
+
+    const mediumSource = document.createElement('source');
+    mediumSource.media = '(min-width:500px)';
+    mediumSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'medium');
+    mediumSource.classList.add('restaurant-img-medium');
+    picture.appendChild(mediumSource);
+
+    const smallSource = document.createElement('img');
+    smallSource.src = this.imageSrcsetForRestaurant(restaurant, 'small');
+    smallSource.alt = `${restaurant.name} image`;
+    smallSource.classList.add('restaurant-img-small');
+    picture.appendChild(smallSource);
+
+    return picture;
+  }
   /**
    * Map marker for a restaurant.
    */
   static mapMarkerForRestaurant(restaurant, map) {
-    const marker = new google.maps.Marker({
-      position: restaurant.latlng,
-      title: restaurant.name,
-      url: DBHelper.urlForRestaurant(restaurant),
-      map: map,
-      animation: google.maps.Animation.DROP
-    });
+    const marker = new google
+      .maps
+      .Marker({
+        position: restaurant.latlng,
+        title: restaurant.name,
+        url: DBHelper.urlForRestaurant(restaurant),
+        map: map,
+        animation: google.maps.Animation.DROP
+      });
     return marker;
   }
 
