@@ -33,7 +33,7 @@
 
 .restaurant-name {
   color: var(--main-color);
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 200;
   letter-spacing: 0;
   margin: 15px 0 30px;
@@ -54,7 +54,7 @@
 
 .reviews-container h2 {
   color: var(--main-color);
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 300;
   letter-spacing: -1px;
   padding-bottom: 1pt;
@@ -66,6 +66,7 @@
   list-style-type: none;
   margin-bottom: 10px;
   width: 100%;
+  border-radius: 20px 20px 20px 20px;
 }
 
 .reviews-list {
@@ -73,14 +74,12 @@
   padding: 0;
 }
 
-.reviewer {
-  border-radius: 20px 0 20px;
-}
-
 .reviewer .reviewer-header {
+  padding-top: 10px;
   padding-left: 10px;
   padding-right: 10px;
   display: flex;
+  border-radius: 20px 0px 20px 0px;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -88,20 +87,22 @@
 }
 
 .reviewer .name {
-  color: var( --widget-accent-font-color);
-  font-size: 1.5rem;
+  color: var(--widget-accent-font-color);
+  font-size: 1.2rem;
 }
 
 .reviewer .date {
-  color: var( --widget-accent-font-color);
-  font-size: 1.5rem;
+  color: var(--widget-accent-font-color);
+  font-size: 1.2rem;
 }
 
 .reviewer .rating {
   padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 10px;
   background-color: var(--main-color);
   font-weight: bold;
-  border-radius: 0 0 10px 10px;
+  display: inline-block;
 }
 
 .reviewer .comments {
@@ -148,6 +149,7 @@
     order: 1;
     width: 50%;
   }
-
-  /* Large devices (desktops, 992px and up) */
-  @media (min-width: 992px) {}
+}
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+}
