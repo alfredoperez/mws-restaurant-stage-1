@@ -141,7 +141,7 @@
 /* ====================== Restaurant Details Media Queries ====================== */
 /* Medium devices (tablets, 768px and up) */
 @media (min-width: 768px) {
-  .layout-col-to-row {
+  .content {
     display: flex;
     flex-direction: row;
   }
