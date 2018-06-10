@@ -55,6 +55,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementsByClassName('restaurant-name')[0];
   name.innerHTML = restaurant.name;
 
+
   const address = document.getElementsByClassName('restaurant-address')[0];
   address.innerHTML = restaurant.address;
 

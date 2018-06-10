@@ -73,7 +73,7 @@ self.addEventListener('install', function (e) {
             // If any of the files fail it will fail the whole add all
             return cache.addAll(filesToCache).then(
                 () => {
-                    console.log('accepted');
+                    console.log('[Service Worker] Install Completed');
                 },
                 (response) => { console.log('rejected' + response) });
         })
@@ -95,30 +95,17 @@ self.addEventListener('activate', function (e) {
 })
 
 self.addEventListener('fetch', function (e) {
-    console.log('[Service Worker] Fetch', e.request.url);
-    //check if the request is to the data api
-    if (e.request.url.startsWith(APIUrlBase + 'test')) {
-        e.respondWith(
-            fetch(e.request)
-                .then(function (response) {
-                    // opening the cache with data
-                    return caches.open(dataCacheName).then(function (cache) {
-                        cache.put(e.request.url, response.clone());
-                        console.log('[Service Worker] Fetched and Cached Data!');
-                    });
-                })
-        )
-    } else {
-        e.respondWith(
 
-            // Evaluates request and check if it is available in the cache
-            caches.match(e.request).then(function (response) {
-                console.log('[Service Worker] Fetch Only!', e.request.url);
-                // Returns the resource from cached version 
-                // or uses fetch to get it from the network
-                return response || fetch(e.request);
-            })
-        )
-    }
+    //check if the request is to the data api
+    e.respondWith(
+
+        // Evaluates request and check if it is available in the cache
+        caches.match(e.request).then(function (response) {
+            console.log('[Service Worker] Fetch Only!', e.request.url);
+            // Returns the resource from cached version 
+            // or uses fetch to get it from the network
+            return response || fetch(e.request);
+        })
+    )
 
 })
