@@ -59,6 +59,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   address.innerHTML = restaurant.address;
 
   const image = document.getElementsByClassName('restaurant-figure')[0];
+  image.alt = restaurant.name + ' Restaurant';
   var picture = DBHelper.createPictureForRestaurant(restaurant);
   image.appendChild(picture);
 
@@ -98,7 +99,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementsByClassName('reviews-container')[0];
-  const title = document.createElement('h2');
+  const title = document.createElement('h3');
   title.innerHTML = 'Reviews';
   container.appendChild(title);
 
@@ -176,14 +177,14 @@ fillBreadcrumb = (restaurant = self.restaurant) => {
  * Get a parameter by name from page URL.
  */
 getParameterByName = (name, url) => {
-  if (!url) 
+  if (!url)
     url = window.location.href;
   name = name.replace(/[\[\]]/g, '\\$&');
   const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
     results = regex.exec(url);
-  if (!results) 
+  if (!results)
     return null;
-  if (!results[2]) 
+  if (!results[2])
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }

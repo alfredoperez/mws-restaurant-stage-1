@@ -9,7 +9,7 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 8000 // Change this to your server port
-    return `http://192.168.1.68:8080/data/restaurants.json`;
+    return `http://localhost:8000/data/restaurants.json`;
   }
 
   /**
@@ -171,12 +171,15 @@ class DBHelper {
     const largeSource = document.createElement('source');
     largeSource.media = '(min-width:750px)';
     largeSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'large');
+    largeSource.alt = `${restaurant.name} image`;
     largeSource.classList.add('restaurant-img-large');
+
     picture.appendChild(largeSource);
 
     const mediumSource = document.createElement('source');
     mediumSource.media = '(min-width:500px)';
     mediumSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'medium');
+    mediumSource.alt = `${restaurant.name} image`;
     mediumSource.classList.add('restaurant-img-medium');
     picture.appendChild(mediumSource);
 

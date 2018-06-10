@@ -22,7 +22,7 @@
 .restaurant-cuisine {
   background-color: var(--widget-accent-bg-color);
   color: #fff;
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 300;
   letter-spacing: 10px;
   margin: 0 0 20px;
@@ -59,13 +59,13 @@
 }
 
 .restaurant-address {
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   margin: 10px 0;
 }
 
 .reviews-container h2 {
   color: var(--main-color);
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   font-weight: 300;
   letter-spacing: -1px;
   padding-bottom: 1pt;
@@ -99,12 +99,12 @@
 
 .reviewer .name {
   color: var(--widget-accent-font-color);
-  font-size: 1.2rem;
+  font-size: 1.0rem;
 }
 
 .reviewer .date {
   color: var(--widget-accent-font-color);
-  font-size: 1.2rem;
+  font-size: 1.0rem;
 }
 
 .reviewer .rating {
@@ -128,6 +128,7 @@
 .content {
   display: flex;
   flex-direction: column;
+  height: calc(100% - (165px) );
 }
 
 .restaurants-container,
@@ -137,6 +138,11 @@
 
 .map-container {
   order: 0;
+}
+
+.breadcrumb {
+
+  font-size: 0.9rem;
 }
 /* ====================== Restaurant Details Media Queries ====================== */
 /* Medium devices (tablets, 768px and up) */

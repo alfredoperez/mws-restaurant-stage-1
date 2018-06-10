@@ -2,10 +2,17 @@
 <html lang="en">
 
 <head>
-  <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css"
-  />
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/home.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible"
+        content="IE=edge">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet"
+        src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+  <link rel="stylesheet"
+        href="css/main.css">
+  <link rel="stylesheet"
+        href="css/home.css">
   <title>Restaurant Reviews</title>
 </head>
 
@@ -13,24 +20,31 @@
   <header class="header">
     <nav class="header__inner">
       <h1 class="header__title">
-        <a class="header__link" href="/">Restaurant Reviews</a>
+        <a class="header__link"
+           href="/">Restaurant Reviews</a>
       </h1>
     </nav>
   </header>
 
   <main class="content">
-    <section class="map-container">
+    <section class="map-container"
+             aria-label="location"
+             role="application">
       <div class="map"></div>
     </section>
     <section class="filters">
       <div class="filter-options">
         <h2 class="filter__label">Filter Results</h2>
-        <select class="neighborhoods-select" name="neighborhoods" aria-label="Neighborhoods Select Control"
-          onchange="updateRestaurants()">
+        <select class="neighborhoods-select"
+                name="neighborhoods"
+                aria-label="Neighborhoods Select Control"
+                onchange="updateRestaurants()">
           <option value="all">All Neighborhoods</option>
         </select>
-        <select class="cuisines-select" name="cuisines" aria-label="Cusines Select Control"
-          onchange="updateRestaurants()">
+        <select class="cuisines-select"
+                name="cuisines"
+                aria-label="Cusines Select Control"
+                onchange="updateRestaurants()">
           <option value="all">All Cuisines</option>
         </select>
       </div>
@@ -38,11 +52,26 @@
     </section>
   </main>
 
-  <script type="application/javascript" charset="utf-8" src="js/dbhelper.js"></script>
-  <script type="application/javascript" charset="utf-8" src="js/main.js"></script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKSc-OLG4ijho4YL41eL3WCHvehx8xADc&libraries=places&callback=initMap"></script>
+  <script type="application/javascript"
+          charset="utf-8"
+          src="js/dbhelper.js"></script>
+  <script type="application/javascript"
+          charset="utf-8"
+          src="js/main.js"></script>
+  <script async
+          defer
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKSc-OLG4ijho4YL41eL3WCHvehx8xADc&libraries=places&callback=initMap"></script>
 
-
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(
+          function (registration) {
+            console.log('Service Worker Registered', registration);
+          }
+        );
+    }
+  </script>
   <footer class="footer">
     Copyright (c) 2017
     <a href="/">

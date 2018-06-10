@@ -2,6 +2,11 @@
 <html lang="en">
 
 <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible"
+        content="IE=edge">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
   <!-- Normalize.css for better cross-browser consistency -->
   <link rel="stylesheet"
         src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
@@ -9,9 +14,15 @@
         rel='stylesheet'
         type='text/css'>
   <!-- Main CSS file -->
-  <link rel="stylesheet" href="css/main.css" type="text/css">
-  <link rel="stylesheet" href="css/restaurant-details.css" type="text/css">
-  <link rel="stylesheet" href="css/helpers.css" type="text/css">
+  <link rel="stylesheet"
+        href="css/main.css"
+        type="text/css">
+  <link rel="stylesheet"
+        href="css/restaurant-details.css"
+        type="text/css">
+  <link rel="stylesheet"
+        href="css/helpers.css"
+        type="text/css">
   <!-- <link rel="stylesheet" href="css/styles.css" type="text/css"> -->
   <title>Restaurant Info</title>
 </head>
@@ -22,31 +33,37 @@
     <!-- Beginning nav -->
     <nav class="header__inner">
       <h1 class="header__title">
-        <a class="header__link" href="/">Restaurant Reviews</a>
+        <a class="header__link"
+           href="/">Restaurant Reviews</a>
       </h1>
     </nav>
     <!-- Beginning breadcrumb -->
-    <ul class="breadcrumb">
+    <nav class="breadcrumb"
+         role="navigation"
+         aria-label="Breadcrumb">
       <li>
         <a href="/">Home</a>
       </li>
-    </ul>
+    </nav>
     <!-- End breadcrumb -->
     <!-- End nav -->
   </header>
   <!-- End header -->
 
   <!-- Beginning main -->
-  <main class="content">
+  <main class="content"
+        tabindex="1">
     <!-- Beginning map -->
-    <section class="map-container">
+    <section class="map-container"
+             aria-label="location"
+             role="application">
       <div class="map"></div>
     </section>
     <!-- End map -->
     <!-- Beginning restaurant -->
     <section class="restaruant-info">
       <section class="restaurant-container">
-        <h1 class="restaurant-name"></h1>
+        <h2 class="restaurant-name"></h2>
         <figure class="restaurant-figure">
         </figure>
         <p class="restaurant-cuisine"></p>
@@ -74,13 +91,27 @@
 
   <!-- Beginning scripts -->
   <!-- Database helpers -->
-  <script type="text/javascript" src="js/dbhelper.js"></script>
+  <script type="text/javascript"
+          src="js/dbhelper.js"></script>
   <!-- Main javascript file -->
-  <script type="text/javascript" src="js/restaurant_info.js"></script>
-  <!-- Google Maps -->
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKSc-OLG4ijho4YL41eL3WCHvehx8xADc&libraries=places&callback=initMap"></script>
-  <!-- End scripts -->
+  <script type="text/javascript"
+          src="js/restaurant_info.js"></script>
 
+  <!-- Google Maps -->
+  <script async
+          defer
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKSc-OLG4ijho4YL41eL3WCHvehx8xADc&libraries=places&callback=initMap"></script>
+  <!-- End scripts -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(
+          function (registration) {
+            console.log('Service Worker Registered', registration);
+          }
+        );
+    }
+  </script>
 </body>
 
 </html>

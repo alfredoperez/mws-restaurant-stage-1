@@ -10,7 +10,9 @@ var markers = []
 document.addEventListener('DOMContentLoaded', (event) => {
   fetchNeighborhoods();
   fetchCuisines();
+
 });
+
 
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -144,6 +146,7 @@ createRestaurantHTML = (restaurant) => {
 
   const image = document.createElement('img');
   image.className = 'restaurant-img';
+  image.alt = `${restaurant.name} image`;
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
   li.append(image);
 

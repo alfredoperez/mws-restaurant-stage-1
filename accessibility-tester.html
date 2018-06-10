@@ -5,10 +5,12 @@
     <meta charset="utf-8">
 
     <title>Radio button group</title>
-    <meta name="description" content="Custom radio buttons with a screen reader">
+    <meta name="description"
+          content="Custom radio buttons with a screen reader">
 
     <!-- Mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
     <style>
         iframe#content {
             position: fixed;
@@ -24,7 +26,8 @@
 </head>
 
 <body>
-    <iframe id="content" src="index.html"></iframe>
+    <iframe id="content"
+            src="restaurant.html?id=1"></iframe>
     <script>
         function injectChromeVox(frame) {
             var templates = document.querySelectorAll('template');
@@ -68,11 +71,13 @@
     </script>
 
     <template class="head">
-        <link rel="stylesheet" href="tools/chromevox-lite/embed.css">
+        <link rel="stylesheet"
+              href="tools/chromevox-lite/embed.css">
     </template>
 
     <template class="start">
-        <button class="hide-unless-focused" id="enable-cvox">Enable ChromeVox Lite</button>
+        <button class="hide-unless-focused"
+                id="enable-cvox">Enable ChromeVox Lite</button>
     </template>
 
     <template class="end">
@@ -99,21 +104,24 @@
             }
         </style>
 
-        <iframe id="cvoxembed" class="cvoxembed" aria-hidden="true" src="tools/chromevox-lite/chromevox_embed.html"></iframe>
+        <iframe id="cvoxembed"
+                class="cvoxembed"
+                aria-hidden="true"
+                src="tools/chromevox-lite/chromevox_embed.html"></iframe>
     </template>
 
     <template class="end">
         <script>
             // First inject stubs that do nothing.
             window.accessibility = {};
-            window.accessibility.speak = function (text, queueMode, params) {}
-            window.accessibility.isSpeaking = function () {}
-            window.accessibility.stop = function () {}
-            window.accessibility.braille = function () {};
+            window.accessibility.speak = function (text, queueMode, params) { }
+            window.accessibility.isSpeaking = function () { }
+            window.accessibility.stop = function () { }
+            window.accessibility.braille = function () { };
 
             // Prevent ChromeVox from playing an earcon on startup.
             window.saveAudio = window.Audio;
-            window.Audio = function () {};
+            window.Audio = function () { };
         </script>
     </template>
 
@@ -241,13 +249,13 @@
                     params: params
                 }, '*');
             }
-            window.accessibility.isSpeaking = function () {}
+            window.accessibility.isSpeaking = function () { }
             window.accessibility.stop = function () {
                 embed.contentWindow.postMessage({
                     command: 'stop'
                 }, '*');
             }
-            window.accessibility.braille = function () {};
+            window.accessibility.braille = function () { };
             window.Audio = window.saveAudio;
             cvox.ChromeVox.earcons.audioMap = {};
 
