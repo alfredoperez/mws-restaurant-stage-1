@@ -1,14 +1,14 @@
 const staticName = 'mws-static-';
-const version = 'v4';
+const version = 'v05';
 
 var cacheName = `${staticName}-${version}`;
 var dataCacheName = `${staticName}data-${version}`;
 
 var filesToCache = [
     '/',
+    '/manifest.json',
     '/index.html',
     '/restaurant.html',
-    '/data/restaurants.json',
 
     '/js/dbhelper.js',
     '/js/main.js',
@@ -62,7 +62,7 @@ var filesToCache = [
     '/images/10-1600_1600_large_2x.jpg'
 
 ];
-var APIUrlBase = 'http://localhost:8000/data/restaurants.json';
+var APIUrlBase = 'http://localhost:1337/restaurants/';
 
 self.addEventListener('install', function (e) {
     console.log('[Service Worker] Install');
@@ -96,16 +96,30 @@ self.addEventListener('activate', function (e) {
 
 self.addEventListener('fetch', function (e) {
 
-    //check if the request is to the data api
-    e.respondWith(
+    console.log('[Service Worker] Fetch', e.request.url);
+    // check if the request is to the weather api
+    if (e.request.url.startsWith(APIUrlBase)) {
+        e.respondWith(
+            fetch(e.request)
+                .then(function (response) {
+                    // opening the cache with data
+                    return caches.open(dataCacheName).then(function (cache) {
+                        cache.put(e.request.url, response.clone());
+                        console.log('[Service Worker] Fetched and Cached Data!');
+                    });
+                })
+        )
+    } else {
+        e.respondWith(
 
-        // Evaluates request and check if it is available in the cache
-        caches.match(e.request).then(function (response) {
-            console.log('[Service Worker] Fetch Only!', e.request.url);
-            // Returns the resource from cached version 
-            // or uses fetch to get it from the network
-            return response || fetch(e.request);
-        })
-    )
+            // Evaluates request and check if it is available in the cache
+            caches.match(e.request).then(function (response) {
+                console.log('[Service Worker] Fetch Only!', e.request.url);
+                // Returns the resource from cached version 
+                // or uses fetch to get it from the network
+                return response || fetch(e.request);
+            })
+        )
+    }
 
 })

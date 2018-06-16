@@ -1,4 +1,5 @@
 let restaurants,
+  restaurantsData,
   neighborhoods,
   cuisines
 var map
@@ -8,8 +9,11 @@ var markers = []
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
-  fetchNeighborhoods();
-  fetchCuisines();
+  DBHelper.fetchRestaurants().then((response) => {
+    self.restaurantsData = response;
+    fetchNeighborhoods();
+    fetchCuisines();
+  })
 
 });
 
@@ -18,14 +22,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
  * Fetch all neighborhoods and set their HTML.
  */
 fetchNeighborhoods = () => {
-  DBHelper.fetchNeighborhoods((error, neighborhoods) => {
-    if (error) { // Got an error
-      console.error(error);
-    } else {
-      self.neighborhoods = neighborhoods;
-      fillNeighborhoodsHTML();
-    }
-  });
+
+  self.neighborhoods = DBHelper.fetchNeighborhoods(self.restaurantsData);
+  fillNeighborhoodsHTML();
 }
 
 /**
@@ -45,14 +44,10 @@ fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
  * Fetch all cuisines and set their HTML.
  */
 fetchCuisines = () => {
-  DBHelper.fetchCuisines((error, cuisines) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      self.cuisines = cuisines;
-      fillCuisinesHTML();
-    }
-  });
+
+  self.cuisines = DBHelper.fetchCuisines(self.restaurantsData);
+  fillCuisinesHTML();
+
 }
 
 /**
@@ -100,14 +95,12 @@ updateRestaurants = () => {
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
-  DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
-    if (error) { // Got an error!
-      console.error(error);
-    } else {
-      resetRestaurants(restaurants);
-      fillRestaurantsHTML();
-    }
-  })
+  const filteredRestaurants = DBHelper.fetchRestaurantByCuisineAndNeighborhood(self.restaurantsData, cuisine, neighborhood);
+
+  resetRestaurants(filteredRestaurants);
+  fillRestaurantsHTML(self.restaurants);
+
+
 }
 
 /**
@@ -130,7 +123,7 @@ resetRestaurants = (restaurants) => {
 /**
  * Create all restaurants HTML and add them to the webpage.
  */
-fillRestaurantsHTML = (restaurants = self.restaurants) => {
+fillRestaurantsHTML = (restaurants) => {
   const ul = document.getElementsByClassName('restaurants-list')[0];
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));

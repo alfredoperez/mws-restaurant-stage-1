@@ -2,7 +2,7 @@
   "name": "mwa-restaurant-stage",
   "version": "0.1.0",
   "scripts": {
-    "serve": "http-server -p 8000 -c10"
+    "serve": "http-server -p 8000  -c10"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

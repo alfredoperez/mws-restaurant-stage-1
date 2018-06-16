@@ -1,13 +1,25 @@
 {
     "name": "MWS-Restaurant-Stage-1",
-    "scope": "/",
+    "short_name": "only_manifest",
+    "description": "Restaurants application for Udacity",
+    "start_url": "/index.html",
+    "scope": ".",
+    "background_color": "#EEE",
+    "theme_color": "#4A148C",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "dir": "ltr",
+    "lang": "en-US",
     "icons": [
         {
-            "src": "/imgs/icon.png",
-            "sizes": "144x144",
+            "src": "images/icon-194x194.png",
+            "sizes": "194x194 512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "images/icon-144x144.png",
+            "sizes": "512x512",
             "type": "image/png"
         }
-    ],
-    "display": "standalone",
-    "start_url": "/"
+    ]
 }

@@ -7,12 +7,16 @@
         content="IE=edge">
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color"
+        content="#1976d2">
   <link rel="stylesheet"
         src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
   <link rel="stylesheet"
         href="css/main.css">
   <link rel="stylesheet"
         href="css/home.css">
+  <link rel="manifest"
+        href="./manifest.json">
   <title>Restaurant Reviews</title>
 </head>
 
@@ -67,8 +71,8 @@
       console.log('[Service Worker ] - registration in progress.');
       navigator.serviceWorker.register('/sw.js').then(function () {
         console.log('[Service Worker ] -  registration complete.');
-      }, function () {
-        console.log('[Service Worker ] -  registration failure.');
+      }, function (error) {
+        console.log('[Service Worker ] -  registration failure.' + error);
       });
     } else {
       console.log('[Service Worker ] -  is not supported.');
