@@ -62,12 +62,12 @@ var filesToCache = [
     '/images/10-1600_1600_large_2x.jpg'
 
 ];
-var APIUrlBase = 'http://localhost:1337/restaurants/';
+var apiUrlBase = 'http://localhost:1337/restaurants';
 
-self.addEventListener('install', function (e) {
+self.addEventListener('install', (e) => {
     console.log('[Service Worker] Install');
     e.waitUntil(
-        caches.open(cacheName).then(function (cache) {
+        caches.open(cacheName).then((cache) => {
             console.log('[Service Worker] Caching App Shell');
             // cache.addAll is atomic. 
             // If any of the files fail it will fail the whole add all
@@ -80,10 +80,10 @@ self.addEventListener('install', function (e) {
     )
 })
 
-self.addEventListener('activate', function (e) {
+self.addEventListener('activate', (e) => {
     console.log('[Service Worker] Activate');
     e.waitUntil(
-        caches.keys().then(function (keyList) {
+        caches.keys().then((keyList) => {
             return Promise.all(keyList.map(function (key) {
                 if (key !== cacheName && key !== dataCacheName) {
                     console.log('[Service Worker] removing old cache', key);
@@ -96,16 +96,21 @@ self.addEventListener('activate', function (e) {
 
 self.addEventListener('fetch', function (e) {
 
-    console.log('[Service Worker] Fetch', e.request.url);
+    // console.log('[Service Worker] Fetch', e.request.url);
     // check if the request is to the weather api
-    if (e.request.url.startsWith(APIUrlBase)) {
+    if (e.request.url.startsWith(apiUrlBase)) {
         e.respondWith(
             fetch(e.request)
-                .then(function (response) {
+                // .then(response => {
+                //     return response.text();
+                // })
+                .then(function (responseBodyAsText) {
                     // opening the cache with data
-                    return caches.open(dataCacheName).then(function (cache) {
-                        cache.put(e.request.url, response.clone());
+                    return caches.open(dataCacheName).then((cache) => {
+                        // cache.put(e.request.url, JSON.parse(responseBodyAsText));
+                        cache.put(e.request.url, responseBodyAsText.clone());
                         console.log('[Service Worker] Fetched and Cached Data!');
+                        return responseBodyAsText;
                     });
                 })
         )
@@ -113,8 +118,8 @@ self.addEventListener('fetch', function (e) {
         e.respondWith(
 
             // Evaluates request and check if it is available in the cache
-            caches.match(e.request).then(function (response) {
-                console.log('[Service Worker] Fetch Only!', e.request.url);
+            caches.match(e.request).then((response) => {
+                //      console.log('[Service Worker] Fetch Only!', e.request.url);
                 // Returns the resource from cached version 
                 // or uses fetch to get it from the network
                 return response || fetch(e.request);

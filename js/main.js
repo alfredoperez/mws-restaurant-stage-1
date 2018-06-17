@@ -11,6 +11,7 @@ var markers = []
 document.addEventListener('DOMContentLoaded', (event) => {
   DBHelper.fetchRestaurants().then((response) => {
     self.restaurantsData = response;
+    updateRestaurants();
     fetchNeighborhoods();
     fetchCuisines();
   })
@@ -86,6 +87,7 @@ window.initMap = () => {
  * Update page and map for current restaurants.
  */
 updateRestaurants = () => {
+  if (!self.map || !self.restaurantsData) return;
   const cSelect = document.getElementsByClassName('cuisines-select')[0];
   const nSelect = document.getElementsByClassName('neighborhoods-select')[0];
 
