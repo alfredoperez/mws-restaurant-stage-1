@@ -62,7 +62,7 @@ var filesToCache = [
     '/images/10-1600_1600_large_2x.jpg'
 
 ];
-var apiUrlBase = 'http://localhost:1337/restaurants';
+var apiUrlBase = 'https://lit-reaches-37723.herokuapp.com/';
 
 self.addEventListener('install', (e) => {
     console.log('[Service Worker] Install');

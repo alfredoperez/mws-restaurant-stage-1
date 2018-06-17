@@ -11,7 +11,7 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 8000 // Change this to your server port
-    return `http://localhost:1337/restaurants`;
+    return `https://lit-reaches-37723.herokuapp.com/restaurants`;
   }
 
 

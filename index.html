@@ -69,7 +69,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       console.log('[Service Worker ] - registration in progress.');
-      navigator.serviceWorker.register('/sw.js').then(function () {
+      navigator.serviceWorker.register('/js/sw.js').then(function () {
         console.log('[Service Worker ] -  registration complete.');
       }, function (error) {
         console.log('[Service Worker ] -  registration failure.' + error);
