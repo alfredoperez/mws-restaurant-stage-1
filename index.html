@@ -10,7 +10,7 @@
   <meta name="theme-color"
         content="#1976d2">
   <link rel="stylesheet"
-        src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+        src="css/normalize.css" />
   <link rel="stylesheet"
         href="css/main.css">
   <link rel="stylesheet"
@@ -70,12 +70,12 @@
     if ('serviceWorker' in navigator) {
       console.log('[Service Worker ] - registration in progress.');
       navigator.serviceWorker.register('/js/sw.js').then(function () {
-        console.log('[Service Worker ] -  registration complete.');
+        console.log('[Service Worker ] -  Registration complete.');
       }, function (error) {
-        console.log('[Service Worker ] -  registration failure.' + error);
+        console.log('[Service Worker ] - Registration failure.' + error);
       });
     } else {
-      console.log('[Service Worker ] -  is not supported.');
+      console.log('[Service Worker ] - Is not supported.');
     }
 
   </script>

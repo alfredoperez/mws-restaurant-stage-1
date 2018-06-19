@@ -45,16 +45,27 @@ class DBHelper {
   /**
    * Fetch a restaurant by its ID.
    */
-  static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
-    fetch(`${DBHelper.DATABASE_URL}/1`)
+  static fetchRestaurantById(id) {
+    return fetch(DBHelper.DATABASE_URL + '/' + id)
       .then(response => {
-
-        return response.json()
+        return response.text();
       })
-      .catch((e, part) => {
-        console.log(e + ' part :' + part);
-      });
+      .then(responseBodyAsText => {
+        try {
+          const bodyAsJson = JSON.parse(responseBodyAsText);
+          return restaurant = bodyAsJson;
+        } catch (e) {
+          Promise.reject({ body: responseBodyAsText, type: 'unparsable' });
+        }
+      })
+
+      .catch(err => {
+        if (false === err instanceof Error && err.type && err.type === 'unparsable') {
+          this.props.dispatch(displayTheError(err.body))
+          return;
+        }
+        throw err;
+      })
   }
 
   /**
