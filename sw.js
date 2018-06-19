@@ -1,12 +1,11 @@
-const staticName = 'mws-static';
-const version = 'v10';
+const staticName = 'mws-static-';
+const version = 'v11';
 
 var cacheName = `${staticName}-${version}`;
 var dataCacheName = `${staticName}data-${version}`;
 
 var filesToCache = [
     '/',
-    '/manifest.json',
     '/index.html',
     '/restaurant.html',
 
@@ -18,8 +17,6 @@ var filesToCache = [
     '/css/home.css',
     '/css/main.css',
     '/css/restaurant-details.css',
-
-    '/css/normalize.css',
 
     '/images/icon.svg',
     '/images/1-500_medium.jpg',
@@ -66,10 +63,10 @@ var filesToCache = [
 ];
 var apiUrlBase = 'https://lit-reaches-37723.herokuapp.com/';
 
-self.addEventListener('install', (e) => {
+self.addEventListener('install', function (e) {
     console.log('[Service Worker] Install');
     e.waitUntil(
-        caches.open(cacheName).then((cache) => {
+        caches.open(cacheName).then(function (cache) {
             console.log('[Service Worker] Caching App Shell');
             // cache.addAll is atomic. 
             // If any of the files fail it will fail the whole add all
@@ -82,14 +79,15 @@ self.addEventListener('install', (e) => {
     )
 })
 
-self.addEventListener('activate', (e) => {
+self.addEventListener('activate', function (e) {
     console.log('[Service Worker] Activate');
     e.waitUntil(
         caches.keys().then((keyList) => {
-            return Promise.all(keyList.map(function (key) {
+            return Promise.all(keyList.map((key) => {
+
+                console.log('[Service Worker] CURRENT CACHE NAME', cacheName);
                 if (key !== cacheName && key !== dataCacheName) {
                     console.log('[Service Worker] removing old cache', key);
-                    console.log('[Service Worker] saving cache for ', cacheName);
                     return caches.delete(key);
                 }
             }));
@@ -99,43 +97,29 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', function (e) {
 
-    console.log('[Service Worker] Fetch', e.request.url);
-    // check if the request is to the weather api
-    var requestUrl = new URL(event.request.url);
     if (e.request.url.startsWith(apiUrlBase)) {
-        if (e.request.url.indexOf('images') > -1) {
-            e.respondWith(servePhoto(e.request));
-            return;
-        } else {
-            e.respondWith(
-                fetch(e.request)
-                    // .then(response => {
-                    //     return response.text();
-                    // })
-                    .then(function (responseBodyAsText) {
-                        if (responseBodyAsText.status == 404) {
-                            return new Response('Whoops, not found');
-                        }
-                        // opening the cache with data
-                        return caches.open(dataCacheName).then((cache) => {
-                            // cache.put(e.request.url, JSON.parse(responseBodyAsText));
-                            cache.put(e.request.url, responseBodyAsText.clone());
-                            console.log('[Service Worker] Fetched and Cached Data!');
-                            return responseBodyAsText;
-                        });
-                    })
-            );
-        }
+        console.log('[Service Worker] Fetch Data Only!', e.request.url);
+        e.respondWith(serveData(e.request));
+        // fetch(e.request)
+        //     .then(function (response) {
+        //         // opening the cache with data
+        //         return caches.open(dataCacheName).then((cache) => {
+        //             cache.put(e.request.url, response.clone());
+        //             console.log('[Service Worker] Fetched and Cached Data!');
+        //             return re
+        //         });
+        //     })
+
+
+
 
     } else {
+        //check if the request is to the data api
         e.respondWith(
 
             // Evaluates request and check if it is available in the cache
-            caches.match(e.request).then((response) => {
-                if (response.status == 404) {
-                    return new Response('Whoops, not found');
-                }
-                //      console.log('[Service Worker] Fetch Only!', e.request.url);
+            caches.match(e.request).then(function (response) {
+                console.log('[Service Worker] Fetch Only!', e.request.url);
                 // Returns the resource from cached version 
                 // or uses fetch to get it from the network
                 return response || fetch(e.request);
@@ -145,35 +129,16 @@ self.addEventListener('fetch', function (e) {
 
 })
 
+function serveData(request) {
+    return caches.open(dataCacheName).then((cache) => {
+        return cache.match(request.url).then((response) => {
+            var fetchPromise = fetch(request).then((networkResponse) => {
+                cache.put(request.url, networkResponse.clone());
+                return networkResponse;
+            });
 
-function servePhoto(request) {
-    // Photo urls look like:
-    // /photos/9-8028-7527734776-e1d2bda28e-800px.jpg
-    // But storageUrl has the -800px.jpg bit missing.
-    // Use this url to store & match the image in the cache.
-    // This means you only store one copy of each photo.
-    var storageUrl = request.url.replace(/-\d+px\.jpg$/, '');
-    // return images from the "wittr-content-imgs" cache
-    // if they're in there. Otherwise, fetch the images from
-    // the network, put them into the cache, and send it back
-    // to the browser.
-    //
-    // HINT: cache.put supports a plain url as the first parameter
+            return response || fetchPromise;
 
-
-    return caches.open(contentImgsCache).then((cache) => {
-        return caches.match(storageUrl)
-            .then((response) => {
-                if (response.status == 404) {
-                    return new Response('Whoops, not found');
-                }
-                return response ||
-                    fetch(request).then((networkResponse) => {
-                        console.log('Storing->', storageUrl);
-                        cache.put(storageUrl, networkResponse.clone());
-                        return networkResponse;
-                    })
-            })
-    })
-
+        });
+    });
 }
