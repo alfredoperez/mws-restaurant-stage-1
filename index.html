@@ -5,6 +5,9 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible"
         content="IE=edge">
+
+  <meta name="theme-color"
+        content="#F3F3F3" />
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
   <meta name="theme-color"
@@ -16,8 +19,88 @@
   <link rel="stylesheet"
         href="css/home.css">
   <link rel="manifest"
-        href="./manifest.json">
+        href="manifest.json">
   <title>Restaurant Reviews</title>
+  <style>
+    /* ====================== Header ====================== */
+
+    .header {
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.26);
+
+      transition: min-height .3s;
+    }
+
+    .header__inner {
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .header__title {
+      display: inline-block;
+      margin-top: 10px;
+      color: #212121;
+    }
+
+    .header__link {
+      color: #fff;
+      font-size: 1.0rem;
+      font-weight: 200;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+    }
+
+    /* ====================== Navigation ====================== */
+
+    nav {
+      width: 100%;
+      height: 60px;
+      background-color: #252831;
+      text-align: center;
+    }
+
+    nav h1 {
+      margin: auto;
+    }
+
+    /* ====================== Breadcrumb ====================== */
+
+    .breadcrumb {
+      padding: 10px 40px 16px;
+      list-style: none;
+      background-color: #eee;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    /* Display list items side by side */
+
+    .breadcrumb li {
+      display: inline;
+    }
+
+    /* Add a slash symbol (/) before/behind each list item */
+
+    .breadcrumb li+li:before {
+      padding: 8px;
+      color: black;
+      content: "/\00a0";
+    }
+
+    /* Add a color to all links inside the list */
+
+    .breadcrumb li a {
+      color: #0275d8;
+      text-decoration: none;
+    }
+
+    /* Add a color on mouse-over */
+
+    .breadcrumb li a:hover {
+      color: #01447e;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 
 <body>

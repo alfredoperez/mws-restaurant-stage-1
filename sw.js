@@ -1,5 +1,5 @@
 const staticName = 'mws-static-';
-const version = 'v11';
+const version = 'v21';
 
 var cacheName = `${staticName}-${version}`;
 var dataCacheName = `${staticName}data-${version}`;
@@ -8,6 +8,7 @@ var filesToCache = [
     '/',
     '/index.html',
     '/restaurant.html',
+    '/manifest.json',
 
     '/js/dbhelper.js',
     '/js/main.js',
@@ -62,7 +63,7 @@ var filesToCache = [
 
 ];
 var apiUrlBase = 'https://lit-reaches-37723.herokuapp.com/';
-
+var googleMaps = 'https://maps.googleapis.com/maps/';
 self.addEventListener('install', function (e) {
     console.log('[Service Worker] Install');
     e.waitUntil(
@@ -88,6 +89,7 @@ self.addEventListener('activate', function (e) {
                 console.log('[Service Worker] CURRENT CACHE NAME', cacheName);
                 if (key !== cacheName && key !== dataCacheName) {
                     console.log('[Service Worker] removing old cache', key);
+
                     return caches.delete(key);
                 }
             }));
@@ -96,30 +98,22 @@ self.addEventListener('activate', function (e) {
 })
 
 self.addEventListener('fetch', function (e) {
-
+    console.log('[Service Worker] Fetch ', e.request.url);
     if (e.request.url.startsWith(apiUrlBase)) {
         console.log('[Service Worker] Fetch Data Only!', e.request.url);
         e.respondWith(serveData(e.request));
-        // fetch(e.request)
-        //     .then(function (response) {
-        //         // opening the cache with data
-        //         return caches.open(dataCacheName).then((cache) => {
-        //             cache.put(e.request.url, response.clone());
-        //             console.log('[Service Worker] Fetched and Cached Data!');
-        //             return re
-        //         });
-        //     })
-
-
-
-
+    } else if (e.request.url.startsWith(googleMaps)) {
+        if (e.request.url.indexOf('Quota') > -1 || e.request.url.indexOf('Authenticate') > -1) {
+            return new Response();
+        }
+        e.respondWith(serveMap(e.request));
     } else {
         //check if the request is to the data api
         e.respondWith(
 
             // Evaluates request and check if it is available in the cache
             caches.match(e.request).then(function (response) {
-                console.log('[Service Worker] Fetch Only!', e.request.url);
+
                 // Returns the resource from cached version 
                 // or uses fetch to get it from the network
                 return response || fetch(e.request);
@@ -130,6 +124,21 @@ self.addEventListener('fetch', function (e) {
 })
 
 function serveData(request) {
+    return caches.open(dataCacheName).then((cache) => {
+        return cache.match(request.url).then((response) => {
+            var fetchPromise = fetch(request).then((networkResponse) => {
+                console.log('[Service Worker] saving data');
+                cache.put(request.url, networkResponse.clone());
+                return networkResponse;
+            });
+
+            return response || fetchPromise;
+
+        });
+    });
+}
+
+function serveMap(request) {
     return caches.open(dataCacheName).then((cache) => {
         return cache.match(request.url).then((response) => {
             var fetchPromise = fetch(request).then((networkResponse) => {
