@@ -27,7 +27,7 @@ initialize = () => {
 initializeServiceWorker = () => {
   if ('serviceWorker' in navigator) {
     console.log('[Service Worker ] - registration in progress.');
-    navigator.serviceWorker.register('/sw.js').then(function () {
+    navigator.serviceWorker.register('../sw.js').then(function () {
       console.log('[Service Worker ] -  registration complete.');
     }, function () {
       console.log('[Service Worker ] -  registration failure.');
