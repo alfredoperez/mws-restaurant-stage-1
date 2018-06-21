@@ -1,5 +1,5 @@
 const staticName = 'mws-static-';
-const version = 'v24';
+const version = 'v25';
 
 var cacheName = `${staticName}-${version}`;
 var dataCacheName = `${staticName}data-${version}`;
@@ -15,6 +15,7 @@ var filesToCache = [
     '/js/main.js',
     '/js/restaurant_info.js',
     '/js/RestaurantService.js',
+    '/sw.js',
 
     '/css/helpers.css',
     '/css/home.css',

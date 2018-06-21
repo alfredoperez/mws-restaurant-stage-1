@@ -1,25 +1,24 @@
 /*eslint-env es6*/
-const idbDb = 'restaurants-db';
 const idbObj = 'restaurants';
-const version = 1;
+const idbVersion = 1;
 
 const apiUrlRestaurants = `https://lit-reaches-37723.herokuapp.com/restaurants`;
 
 class IdbHelper {
-    static get dbPromise() {
+    static get openDatabase() {
         if (!('indexedDB' in window)) {
             console.log('This browser doesn\'t support IndexedDB');
             return;
         }
 
-        const dbPromise = idb.open(idbDb, version);
+        const dbPromise = idb.open('restaurants-db', idbVersion);
         return dbPromise;
     }
 
     static initialize(callback) {
         IdbHelper.databaseExists((res) => {
-            console.log(IdbHelper.idbDb + ' exists? ' + res);
-            if (res) {
+            console.log('restaurants-db' + ' exists? ' + res);
+            if (!res) {
                 IdbHelper.createNewDatabase();
                 IdbHelper.populateDatabase(callback);
             } else {
@@ -31,12 +30,12 @@ class IdbHelper {
      * Check if idb restaurants index exists
      */
     static databaseExists(callback) {
-        var req = indexedDB.open(idbDb);
+        var req = indexedDB.open('restaurants-db');
         var existed = true;
         req.onsuccess = function () {
             req.result.close();
             if (!existed)
-                indexedDB.deleteDatabase(idbDb);
+                indexedDB.deleteDatabase('restaurants-db');
             callback(existed);
         };
         req.onupgradeneeded = function () {
@@ -48,9 +47,9 @@ class IdbHelper {
      * Delete idb restaurants index if exists
      */
     static deleteOldDatabase() {
-        let DBDeleteRequest = window.indexedDB.deleteDatabase(idbDb);
+        let DBDeleteRequest = window.indexedDB.deleteDatabase('restaurants-db');
         DBDeleteRequest.onerror = function () {
-            console.log('Error deleting database ' + idbDb);
+            console.log('Error deleting database ' + 'restaurants-db');
         };
         DBDeleteRequest.onsuccess = function () {
             console.log('Old db successfully deleted!');
@@ -61,13 +60,13 @@ class IdbHelper {
      * Create new IDB restaurant index
      */
     static createNewDatabase() {
-        /*eslint-disable no-undef*/
-        idb.open(idbDb, version, function (upgradeDb) {
-            /*eslint-enable no-undef*/
+        idb.open('restaurants-db', idbVersion, function (upgradeDb) {
+
             if (!upgradeDb.objectStoreNames.contains(idbObj)) {
+                console.log('restaurants-db' + ' has been created!');
                 upgradeDb.createObjectStore(idbObj, { keypath: 'id', autoIncrement: true });
             }
-            console.log(idbDb + ' has been created!');
+            console.log('restaurants-db' + ' has been created!');
         });
     }
 
@@ -79,8 +78,9 @@ class IdbHelper {
         fetch(apiUrlRestaurants)
             .then(res => res.json())
             .then(restaurants => {
-                IdbHelper.dbPromise.then(
+                IdbHelper.openDatabase.then(
                     db => {
+                        if (!db) return;
                         const tx = db.transaction(idbObj, 'readwrite');
                         const store = tx.objectStore(idbObj);
                         restaurants.map(restaurant => store.put(restaurant));
@@ -96,7 +96,7 @@ class IdbHelper {
      * Read all data from idb restaurants index
      */
     static readAllIdbData() {
-        return IdbHelper.dbPromise.then(db => {
+        return IdbHelper.openDatabase.then(db => {
             return db.transaction(idbObj)
                 .objectStore(idbObj).getAll();
         });
