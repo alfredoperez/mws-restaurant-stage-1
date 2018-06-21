@@ -8,23 +8,41 @@ var markers = []
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
-document.addEventListener('DOMContentLoaded', (event) => {
-  DBHelper.fetchRestaurants().then((response) => {
-    self.restaurantsData = response;
-    updateRestaurants();
-    fetchNeighborhoods();
-    fetchCuisines();
-  })
-
+document.addEventListener('DOMContentLoaded', () => {
+  self.initializeServiceWorker();
+  IdbHelper.initialize(self.initialize);
 });
 
+initialize = () => {
+  RestaurantService.fetchRestaurants()
+    .then((response) => {
+      self.restaurantsData = response;
+      updateRestaurants();
+      fetchNeighborhoods();
+      fetchCuisines();
+    })
+
+}
+
+initializeServiceWorker = () => {
+  if ('serviceWorker' in navigator) {
+    console.log('[Service Worker ] - registration in progress.');
+    navigator.serviceWorker.register('/sw.js').then(function () {
+      console.log('[Service Worker ] -  registration complete.');
+    }, function () {
+      console.log('[Service Worker ] -  registration failure.');
+    });
+  } else {
+    console.log('[Service Worker ] -  is not supported.');
+  }
+}
 
 /**
  * Fetch all neighborhoods and set their HTML.
  */
 fetchNeighborhoods = () => {
 
-  self.neighborhoods = DBHelper.fetchNeighborhoods(self.restaurantsData);
+  self.neighborhoods = RestaurantService.fetchNeighborhoods(self.restaurantsData);
   fillNeighborhoodsHTML();
 }
 
@@ -46,7 +64,7 @@ fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
  */
 fetchCuisines = () => {
 
-  self.cuisines = DBHelper.fetchCuisines(self.restaurantsData);
+  self.cuisines = RestaurantService.fetchCuisines(self.restaurantsData);
   fillCuisinesHTML();
 
 }
@@ -97,7 +115,7 @@ updateRestaurants = () => {
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
-  const filteredRestaurants = DBHelper.fetchRestaurantByCuisineAndNeighborhood(self.restaurantsData, cuisine, neighborhood);
+  const filteredRestaurants = RestaurantService.fetchRestaurantByCuisineAndNeighborhood(self.restaurantsData, cuisine, neighborhood);
 
   resetRestaurants(filteredRestaurants);
   fillRestaurantsHTML(self.restaurants);
@@ -142,7 +160,7 @@ createRestaurantHTML = (restaurant) => {
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.alt = `${restaurant.name} image`;
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.src = RestaurantService.imageUrlForRestaurant(restaurant);
   li.append(image);
 
   const name = document.createElement('h2');
@@ -160,7 +178,7 @@ createRestaurantHTML = (restaurant) => {
   const more = document.createElement('a');
   more.innerHTML = 'View Details';
   more.tabIndex = 0;
-  more.href = DBHelper.urlForRestaurant(restaurant);
+  more.href = RestaurantService.urlForRestaurant(restaurant);
   li.append(more)
 
   return li
@@ -172,7 +190,7 @@ createRestaurantHTML = (restaurant) => {
 addMarkersToMap = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
-    const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.map);
+    const marker = RestaurantService.mapMarkerForRestaurant(restaurant, self.map);
     google
       .maps
       .event
