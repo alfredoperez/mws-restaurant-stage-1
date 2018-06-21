@@ -1,5 +1,5 @@
 const staticName = 'mws-static-';
-const version = 'v21';
+const version = 'v24';
 
 var cacheName = `${staticName}-${version}`;
 var dataCacheName = `${staticName}data-${version}`;
@@ -10,9 +10,11 @@ var filesToCache = [
     '/restaurant.html',
     '/manifest.json',
 
-    '/js/dbhelper.js',
+    '/js/idb.js',
+    '/js/idbhelper.js',
     '/js/main.js',
     '/js/restaurant_info.js',
+    '/js/RestaurantService.js',
 
     '/css/helpers.css',
     '/css/home.css',
@@ -86,9 +88,9 @@ self.addEventListener('activate', function (e) {
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
 
-                console.log('[Service Worker] CURRENT CACHE NAME', cacheName);
+                //   console.log('[Service Worker] CURRENT CACHE NAME', cacheName);
                 if (key !== cacheName && key !== dataCacheName) {
-                    console.log('[Service Worker] removing old cache', key);
+                    //   console.log('[Service Worker] removing old cache', key);
 
                     return caches.delete(key);
                 }
@@ -98,9 +100,9 @@ self.addEventListener('activate', function (e) {
 })
 
 self.addEventListener('fetch', function (e) {
-    console.log('[Service Worker] Fetch ', e.request.url);
+    //  console.log('[Service Worker] Fetch ', e.request.url);
     if (e.request.url.startsWith(apiUrlBase)) {
-        console.log('[Service Worker] Fetch Data Only!', e.request.url);
+        //  console.log('[Service Worker] Fetch Data Only!', e.request.url);
         e.respondWith(serveData(e.request));
     } else if (e.request.url.startsWith(googleMaps)) {
         if (e.request.url.indexOf('Quota') > -1 || e.request.url.indexOf('Authenticate') > -1) {
@@ -127,7 +129,7 @@ function serveData(request) {
     return caches.open(dataCacheName).then((cache) => {
         return cache.match(request.url).then((response) => {
             var fetchPromise = fetch(request).then((networkResponse) => {
-                console.log('[Service Worker] saving data');
+                //   console.log('[Service Worker] saving data');
                 cache.put(request.url, networkResponse.clone());
                 return networkResponse;
             });

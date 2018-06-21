@@ -139,9 +139,17 @@
     </section>
   </main>
 
+
   <script type="application/javascript"
           charset="utf-8"
-          src="js/dbhelper.js"></script>
+          src="js/idb.js"></script>
+  <script type="application/javascript"
+          charset="utf-8"
+          src="js/idbhelper.js"></script>
+  <script type="application/javascript"
+          charset="utf-8"
+          src="js/RestaurantService.js"></script>
+
   <script type="application/javascript"
           charset="utf-8"
           src="js/main.js"></script>
@@ -149,19 +157,6 @@
           defer
           src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKSc-OLG4ijho4YL41eL3WCHvehx8xADc&libraries=places&callback=initMap"></script>
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      console.log('[Service Worker ] - registration in progress.');
-      navigator.serviceWorker.register('/js/sw.js').then(function () {
-        console.log('[Service Worker ] -  Registration complete.');
-      }, function (error) {
-        console.log('[Service Worker ] - Registration failure.' + error);
-      });
-    } else {
-      console.log('[Service Worker ] - Is not supported.');
-    }
-
-  </script>
   <footer class="footer">
     Copyright (c) 2017
     <a href="/">
