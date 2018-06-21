@@ -132,18 +132,22 @@ class RestaurantService {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    return (`images/${restaurant.photograph}-500_small.jpg`);
+    return restaurant.photograph === undefined
+      ? 'https://via.placeholder.com/800x600'
+      : `images/${restaurant.photograph}-500_small.jpg`;
   }
 
   /**
    * Restaurant image URL.
    */
   static imageSrcsetForRestaurant(restaurant, size) {
-    var srcSet = size === 'large'
-      ? `images/${restaurant.photograph}-1600_1600_large_2x.jpg 2x, images/${restaurant.photograph}-800_800_large_1x.jpg`
-      : size === 'medium'
-        ? `images/${restaurant.photograph}-500_medium.jpg`
-        : `images/${restaurant.photograph}-500_small.jpg`
+    var srcSet = restaurant.photograph === undefined
+      ? 'https://via.placeholder.com/800x600'
+      : size === 'large'
+        ? `images/${restaurant.photograph}-1600_1600_large_2x.jpg 2x, images/${restaurant.photograph}-800_800_large_1x.jpg`
+        : size === 'medium'
+          ? `images/${restaurant.photograph}-500_medium.jpg`
+          : `images/${restaurant.photograph}-500_small.jpg`
     return srcSet;
   }
 

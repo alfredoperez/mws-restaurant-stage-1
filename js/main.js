@@ -9,7 +9,6 @@ var markers = []
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', () => {
-  self.initializeServiceWorker();
   IdbHelper.initialize(self.initialize);
 });
 
@@ -24,18 +23,7 @@ initialize = () => {
 
 }
 
-initializeServiceWorker = () => {
-  if ('serviceWorker' in navigator) {
-    console.log('[Service Worker ] - registration in progress.');
-    navigator.serviceWorker.register('../sw.js').then(function () {
-      console.log('[Service Worker ] -  registration complete.');
-    }, function () {
-      console.log('[Service Worker ] -  registration failure.');
-    });
-  } else {
-    console.log('[Service Worker ] -  is not supported.');
-  }
-}
+
 
 /**
  * Fetch all neighborhoods and set their HTML.
