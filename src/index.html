@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible"
+        content="IE=edge">
+
+  <meta name="theme-color"
+        content="#F3F3F3" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color"
+        content="#1976d2">
+
+  <link rel="manifest"
+        href="manifest.json">
+  <title>Restaurant Reviews</title>
+  <style>
+    @charset "utf-8";
+
+    :root {
+      --main-bg-color: #ece6e6;
+      --widget-bg-color: #ffffff;
+      --white: #ffffff;
+      --widget-accent-bg-color: #333;
+      --main-color: #f18200;
+      --main-color-hover: #bb6d14;
+      --main-border-color: #ff7f3;
+      --widget-accent-font-color: #ffffff;
+    }
+
+    /* CSS Document */
+
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      color: #424242;
+      background-color: var(--main-bg-color);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+      margin: 0;
+    }
+
+    article,
+    div,
+    footer,
+    header,
+    nav,
+    section {
+      box-sizing: border-box;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    body,
+    p,
+    td,
+    th {
+      color: #333;
+      line-height: 1.5;
+    }
+
+    li,
+    ul {
+
+      color: #333;
+    }
+
+    a {
+      color: var(--main-color);
+      text-decoration: none;
+    }
+
+    a:focus,
+    a:hover {
+      color: var(--main-color-hover);
+      text-decoration: none;
+    }
+
+    a img {
+      border: none 0 var(--widget-bg-color);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin: 0 0 20px;
+    }
+
+    article,
+    aside,
+    canvas,
+    details,
+    figcaption,
+    figure,
+    footer,
+    header,
+    hgroup,
+    menu,
+    nav,
+    section {
+      display: block;
+    }
+
+    /* ====================== Header ====================== */
+
+    .header {
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.26);
+
+      transition: min-height .3s;
+    }
+
+    .header__inner {
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .header__title {
+      display: inline-block;
+      margin-top: 10px;
+      color: #212121;
+    }
+
+    .header__link {
+      color: #fff;
+      font-size: 1.0rem;
+      font-weight: 200;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+    }
+
+    /* ====================== Navigation ====================== */
+
+    nav {
+      width: 100%;
+      height: 60px;
+      background-color: #252831;
+      text-align: center;
+    }
+
+    nav h1 {
+      margin: auto;
+    }
+
+    /* ====================== Breadcrumb ====================== */
+
+    .breadcrumb {
+      padding: 10px 40px 16px;
+      list-style: none;
+      background-color: #eee;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+
+    /* Display list items side by side */
+
+    .breadcrumb li {
+      display: inline;
+    }
+
+    /* Add a slash symbol (/) before/behind each list item */
+
+    .breadcrumb li+li:before {
+      padding: 8px;
+      color: black;
+      content: "/\00a0";
+    }
+
+    /* Add a color to all links inside the list */
+
+    .breadcrumb li a {
+      color: #0275d8;
+      text-decoration: none;
+    }
+
+    /* Add a color on mouse-over */
+
+    .breadcrumb li a:hover {
+      color: #01447e;
+      text-decoration: underline;
+    }
+
+    /* ====================== Main ====================== */
+
+    .content {
+      height: calc(100% - (118px));
+      overflow: auto;
+    }
+
+    /* ====================== Footer ====================== */
+
+    .footer {
+      background-color: #444;
+      color: #ffffff;
+      font-size: .6rem;
+      letter-spacing: 1px;
+      padding: 15px;
+      text-align: center;
+      text-transform: uppercase;
+      bottom: 0;
+    }
+
+    @media (min-width: 548px) {
+      .content {
+        height: calc(100% - (109px));
+      }
+    }
+
+    /* Medium devices (tablets, 768px and up) */
+
+    @media (min-width: 768px) {
+      .header__link {
+        font-size: 1.5rem;
+      }
+
+      .breadcrumb {
+        font-size: 1rem;
+      }
+      .footer {
+        font-size: .8rem;
+      }
+      .content {
+        height: calc(100% - (109px));
+      }
+    }
+
+    /* Large devices (desktops, 992px and up) */
+
+    @media (min-width: 992px) {}
+  </style>
+</head>
+
+<body>
+  <noscript id="deferred-styles">
+    <link type="text/css"
+          rel="stylesheet"
+          href="./css/home.min.css">
+  </noscript>
+  <header class="header">
+    <nav class="header__inner">
+      <h1 class="header__title">
+        <a class="header__link"
+           href="/">Restaurant Reviews</a>
+      </h1>
+    </nav>
+  </header>
+
+  <main class="content">
+    <section class="map-container"
+             aria-label="location"
+             role="application">
+      <div class="map"></div>
+    </section>
+    <section class="filters">
+      <div class="filter-options">
+        <h2 class="filter__label">Filter Results</h2>
+        <select class="neighborhoods-select"
+                name="neighborhoods"
+                aria-label="Neighborhoods Select Control"
+                onchange="updateRestaurants()">
+          <option value="all">All Neighborhoods</option>
+        </select>
+        <select class="cuisines-select"
+                name="cuisines"
+                aria-label="Cusines Select Control"
+                onchange="updateRestaurants()">
+          <option value="all">All Cuisines</option>
+        </select>
+      </div>
+      <ul class="restaurants-list"></ul>
+    </section>
+  </main>
+
+
+  <script defer
+          type="application/javascript"
+          charset="utf-8"
+          src="./js/idb.js"></script>
+  <script defer
+          type="application/javascript"
+          charset="utf-8"
+          src="./js/idbHelper.js"></script>
+  <script defer
+          type="application/javascript"
+          charset="utf-8"
+          src="./js/RestaurantService.js"></script>
+
+  <script defer
+          type="application/javascript"
+          charset="utf-8"
+          src="./js/main.js"></script>
+  <script async
+          defer
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCKSc-OLG4ijho4YL41eL3WCHvehx8xADc&libraries=places&callback=initMap"></script>
+
+  <footer class="footer">
+    Copyright (c) 2018
+    <a href="/">
+      <strong>Restaurant Reviews</strong>
+    </a> All Rights Reserved.
+  </footer>
+  <script>
+    if ('serviceWorker' in navigator) {
+      console.log('[Service Worker ] - registration in progress.');
+      navigator.serviceWorker.register('./sw.js').then(function () {
+        console.log('[Service Worker ] -  registration complete.');
+      }, function () {
+        console.log('[Service Worker ] -  registration failure.');
+      });
+    } else {
+      console.log('[Service Worker ] - is not supported.');
+    }
+
+    var loadDeferredStyles = function () {
+      var addStylesNode = document.getElementById("deferred-styles");
+      var replacement = document.createElement("div");
+      replacement.innerHTML = addStylesNode.textContent;
+      document.body.appendChild(replacement)
+      addStylesNode.parentElement.removeChild(addStylesNode);
+    };
+    var raf = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+      window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+    if (raf) raf(function () { window.setTimeout(loadDeferredStyles, 0); });
+    else window.addEventListener('load', loadDeferredStyles);
+  </script>
+</body>
+
+</html>
