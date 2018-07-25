@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "scripts": {
     "start:dev": "node ./server.js",
-    "build": "gulp"
+    "build": "gulp",
+    "serve": "http-server ./build -p 8888 -c10"
   },
   "author": "Alfredo Perez",
   "license": "ISC",
@@ -13,7 +14,6 @@
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-html-import-to-string": "0.0.1",
     "babelify": "^9.0.0",
-    "browserify": "^16.2.2",
     "del": "^3.0.0",
     "gulp": "^4.0.0",
     "gulp-autoprefixer": "^5.0.0",

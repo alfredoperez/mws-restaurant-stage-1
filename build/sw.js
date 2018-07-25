@@ -1,87 +1,50 @@
-const staticName = 'mws-static-';
-const version = 'v25';
+const staticName = 'mws-cache';
+const version = 'v2';
 
-var cacheName = `${staticName}-${version}`;
-var dataCacheName = `${staticName}data-${version}`;
-
+var staticCacheName = `${staticName}-static-${version}`;
+var dynamicCacheName = `${staticName}-dynamic-${version}`;
 var filesToCache = [
     '/',
     '/index.html',
     '/restaurant.html',
-    '/manifest.json',
 
-    '/js/idb.js',
-    '/js/idbhelper.js',
+    '/sw.js',
     '/js/main.js',
     '/js/restaurant_info.js',
-    '/js/RestaurantService.js',
-    '/sw.js',
 
-    '/css/helpers.css',
-    '/css/home.css',
-    '/css/main.css',
-    '/css/restaurant-details.css',
 
-    '/images/icon.svg',
-    '/images/1-500_medium.jpg',
+    '/css/home.min.css',
+    '/css/restaurant-details.min.css',
     '/images/1-500_small.jpg',
-    '/images/1-800_800_large_1x.jpg',
-    '/images/1-1600_1600_large_2x.jpg',
-    '/images/2-500_medium.jpg',
     '/images/2-500_small.jpg',
-    '/images/2-800_800_large_1x.jpg',
-    '/images/2-1600_1600_large_2x.jpg',
-    '/images/3-500_medium.jpg',
     '/images/3-500_small.jpg',
-    '/images/3-800_800_large_1x.jpg',
-    '/images/3-1600_1600_large_2x.jpg',
-    '/images/4-500_medium.jpg',
     '/images/4-500_small.jpg',
-    '/images/4-800_800_large_1x.jpg',
-    '/images/4-1600_1600_large_2x.jpg',
-    '/images/5-500_medium.jpg',
     '/images/5-500_small.jpg',
-    '/images/5-800_800_large_1x.jpg',
-    '/images/5-1600_1600_large_2x.jpg',
-    '/images/6-500_medium.jpg',
     '/images/6-500_small.jpg',
-    '/images/6-800_800_large_1x.jpg',
-    '/images/6-1600_1600_large_2x.jpg',
-    '/images/7-500_medium.jpg',
     '/images/7-500_small.jpg',
-    '/images/7-800_800_large_1x.jpg',
-    '/images/7-1600_1600_large_2x.jpg',
-    '/images/8-500_medium.jpg',
     '/images/8-500_small.jpg',
-    '/images/8-800_800_large_1x.jpg',
-    '/images/8-1600_1600_large_2x.jpg',
-    '/images/9-500_medium.jpg',
     '/images/9-500_small.jpg',
-    '/images/9-800_800_large_1x.jpg',
-    '/images/9-1600_1600_large_2x.jpg',
-    '/images/10-500_medium.jpg',
     '/images/10-500_small.jpg',
-    '/images/10-800_800_large_1x.jpg',
-    '/images/10-1600_1600_large_2x.jpg'
-
+    '/images/undefined-500_small.jpg'
 ];
+
 var apiUrlBase = 'https://lit-reaches-37723.herokuapp.com/';
 var googleMaps = 'https://maps.googleapis.com/maps/';
+
+
 self.addEventListener('install', function (e) {
     console.log('[Service Worker] Install');
     e.waitUntil(
-        caches.open(cacheName).then(function (cache) {
+        caches.open(staticCacheName).then(function (cache) {
             console.log('[Service Worker] Caching App Shell');
             // cache.addAll is atomic. 
             // If any of the files fail it will fail the whole add all
             return cache.addAll(filesToCache).then(
-                () => {
-                    console.log('[Service Worker] Install Completed');
-                },
-                (response) => { console.log('rejected' + response) });
+                () => { console.log('[Service Worker] Install Completed'); },
+                (response) => { console.log('[Service Worker] Rejected :' + response); });
         })
     )
-})
+});
 
 self.addEventListener('activate', function (e) {
     console.log('[Service Worker] Activate');
@@ -90,59 +53,84 @@ self.addEventListener('activate', function (e) {
             return Promise.all(keyList.map((key) => {
 
                 //   console.log('[Service Worker] CURRENT CACHE NAME', cacheName);
-                if (key !== cacheName && key !== dataCacheName) {
+                if (key !== staticCacheName) {
                     //   console.log('[Service Worker] removing old cache', key);
 
                     return caches.delete(key);
                 }
             }));
         })
-    )
-})
+    );
+});
 
 self.addEventListener('fetch', function (e) {
-    //  console.log('[Service Worker] Fetch ', e.request.url);
-    if (e.request.url.startsWith(apiUrlBase)) {
-        //  console.log('[Service Worker] Fetch Data Only!', e.request.url);
-        e.respondWith(serveData(e.request));
-    } else if (e.request.url.startsWith(googleMaps)) {
-        if (e.request.url.indexOf('Quota') > -1 || e.request.url.indexOf('Authenticate') > -1) {
-            return new Response();
+    const requestUrl = new URL(e.request.url);
+    console.log('[Service Worker] Fetch ', e.request.url);
+
+    if (requestUrl.origin === location.origin) {
+        // Redirect 'http://localhost:8000' to 'http://localhost:8000/index.html' since 
+        // they should bascially be the same html
+        if (requestUrl.pathname === '/') {
+            e.respondWith(caches.match('index.html'));
+            return;
         }
-        e.respondWith(serveMap(e.request));
-    } else {
-        //check if the request is to the data api
-        e.respondWith(
-
-            // Evaluates request and check if it is available in the cache
-            caches.match(e.request).then(function (response) {
-
-                // Returns the resource from cached version 
-                // or uses fetch to get it from the network
-                return response || fetch(e.request);
-            })
-        )
     }
 
-})
+    // if (e.request.url.startsWith(googleMaps)) {
+    //     if (e.request.url.indexOf('Quota') > -1 || e.request.url.indexOf('Authenticate') > -1) {
+    //         return new Response();
+    //     }
+    //     e.respondWith(serveMap(e.request));
+    //     return;
+    // }
 
-function serveData(request) {
-    return caches.open(dataCacheName).then((cache) => {
-        return cache.match(request.url).then((response) => {
-            var fetchPromise = fetch(request).then((networkResponse) => {
-                //   console.log('[Service Worker] saving data');
-                cache.put(request.url, networkResponse.clone());
-                return networkResponse;
-            });
+    // if (requestUrl.origin.indexOf('chrome-extension') === -1 &&requestUrl.origin.indexOf('maps') === -1) {
+    if (requestUrl.origin.indexOf('chrome-extension') === -1) {
 
-            return response || fetchPromise;
+        serve(e, e.request);
+    }
 
-        });
-    });
+
+
+});
+
+function serve(event, cacheRequest) {
+    // Check if the HTML request has previously been cached.
+    // If so, return the response from the cache. If not,
+    // fetch the request, cache it, and then return it.
+    event.respondWith(
+        caches.match(cacheRequest).then(response => {
+            console.log(cacheRequest.url + ' -> RESPONSE:' + response);
+            return (
+                response ||
+                fetch(event.request)
+                    .then(fetchResponse => {
+                        return caches.open(dynamicCacheName).then(cache => {
+                            cache.put(event.request, fetchResponse.clone());
+
+                            console.log('saving in cache: ' + JSON.stringify(event.request.url));
+                            return fetchResponse;
+                        });
+                    })
+                    .catch(error => {
+                        if (event.request.url.indexOf(".jpg") > -1) {
+                            return caches.match('/images/undefined-500_small.jpg');
+                        }
+                        return new Response(
+                            "Application is not connected to the internet",
+                            {
+                                status: 404,
+                                statusText: "Application is not connected to the internet"
+                            }
+                        );
+                    })
+            );
+        })
+    );
 }
 
 function serveMap(request) {
-    return caches.open(dataCacheName).then((cache) => {
+    return caches.open(staticCacheName).then((cache) => {
         return cache.match(request.url).then((response) => {
             var fetchPromise = fetch(request).then((networkResponse) => {
                 cache.put(request.url, networkResponse.clone());

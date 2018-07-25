@@ -1,14 +1,15 @@
 const del = require('del');
-const browserify = require('browserify');
-const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
 const gulp = require('gulp');
 const autoprefixer = require('gulp-autoprefixer');
 const clean_css = require('gulp-clean-css');
 const concat = require('gulp-concat');
-const sourcemaps = require('gulp-sourcemaps');
+const rename = require('gulp-rename');
 const uglify = require('gulp-uglify');
-var $ = require('gulp-load-plugins')({lazy: true});
+const browserify = require('browserify');
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
+const sourcemaps = require('gulp-sourcemaps');
+var $ = require('gulp-load-plugins')({ lazy: true });
 
 const dirs = {
   src: 'src',
@@ -29,27 +30,21 @@ const build_html = () => {
         $.htmlmin({
           collapseWhitespace: true,
           minifyCSS: true,
-          minifyJS: { compress: { drop_console: true } },
+          minifyJS: { compress: { drop_console: false } },
           processConditionalComments: true,
           removeComments: true,
           removeEmptyAttributes: true,
-          removeScriptTypeAttributes: true,
-          removeStyleLinkTypeAttributes: true
         })
       )
     )
     .pipe(gulp.dest(`${dirs.dest}/`));
 }
-// const build_html = () => {
-//   return gulp.src([`${dirs.src}/*.html`])
-//     .pipe(gulp.dest(`${dirs.dest}/`));
-// }
+
 
 const build_css_source = (source) => {
   return gulp.src([
     `${dirs.src}/css/helpers.css`,
     `${dirs.src}/css/main.css`,
-    `${dirs.src}/css/normalize.css`,
     `${dirs.src}/css/${source}.css`,
   ])
     .pipe(clean_css({ sourceMap: true }))
@@ -64,7 +59,13 @@ const build_css_restaurant = () => build_css_source('restaurant-details');
 const build_css = gulp.series(build_css_index, build_css_restaurant);
 
 const build_script = (filename) => {
-  return browserify(`${dirs.src}/js/${filename}`)
+  return browserify(
+    [
+      `${dirs.src}/js/idb.js`,
+      `${dirs.src}/js/idbhelper.js`,
+      `${dirs.src}/js/RestaurantService.js`,
+      `${dirs.src}/js/${filename}.js`,
+    ])
     .transform('babelify')
     .bundle()
     .pipe(source(filename))
@@ -72,26 +73,49 @@ const build_script = (filename) => {
     .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(uglify())
     .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(`${dirs.dest}/js`));
+    .pipe(gulp.dest(`${dirs.dest}/public/js`));
 }
 
-const build_script_index = () => build_script('main.js');
-const build_script_restaurant = () => build_script('restaurant-details.js');
+const build_js_source = (source) => {
+  return gulp.src([
+    `${dirs.src}/js/idb.js`,
+    `${dirs.src}/js/idbhelper.js`,
+    `${dirs.src}/js/RestaurantService.js`,
+    `${dirs.src}/js/${source}.js`,
+  ])
+    .pipe(concat(`${source}.js`))
+    .pipe(gulp.dest(`${dirs.dest}/js`))
+  // .pipe(rename(`${dirs.dest}/js`))
+  // .pipe(uglify())
+  // .pipe(gulp.dest(`${dirs.dest}/js`));
+}
 
-const build_scripts = gulp.parallel(build_script_index, build_script_restaurant);
+const build_js_index = () => build_js_source('main');
+const build_js_restaurant = () => build_js_source('restaurant_info');
+
+const build_js = gulp.series(build_js_index, build_js_restaurant);
 
 const copy_static = () => {
   return gulp.src([
     `${dirs.src}/**/*.json`,
-    `${dirs.src}/**/*.js`,
-    `${dirs.src}/images/*`,
     `${dirs.src}/sw.js`,
     `${dirs.src}/**/*.ico`,
   ], { base: dirs.src })
     .pipe(gulp.dest(`${dirs.dest}`));
 };
 
-const build_all = gulp.series(clean, build_html, build_css,copy_static);
+/**
+ * Compress images
+ * @return {Stream}
+ */
+const copy_images = () => {
+  return gulp
+    .src(`${dirs.src}/images/*`)
+    .pipe($.imagemin({ optimizationLevel: 4 }))
+    .pipe(gulp.dest(`${dirs.dest}/images`));
+}
+
+const build_all = gulp.series(clean, build_html, build_css, build_js, copy_static, copy_images);
 gulp.task('watch', () => {
   gulp.watch([dirs.src], build_all)
 });

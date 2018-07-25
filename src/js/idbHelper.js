@@ -1,8 +1,9 @@
 /*eslint-env es6*/
-const idbObj = 'restaurants';
-const idbVersion = 1;
 
-const apiUrlRestaurants = `https://lit-reaches-37723.herokuapp.com/restaurants`;
+var idbObj = 'restaurants';
+var idbVersion = 1;
+
+var apiUrlRestaurants = 'https://lit-reaches-37723.herokuapp.com/restaurants';
 
 class IdbHelper {
     static get openDatabase() {
@@ -11,7 +12,7 @@ class IdbHelper {
             return;
         }
 
-        const dbPromise = idb.open('restaurants-db', idbVersion);
+        var dbPromise = idb.open('restaurants-db', idbVersion);
         return dbPromise;
     }
 
@@ -21,6 +22,7 @@ class IdbHelper {
             if (!res) {
                 IdbHelper.createNewDatabase();
                 IdbHelper.populateDatabase(callback);
+                console.log('restaurants-db' + ' created and populated ');
             } else {
                 callback();
             }
@@ -61,12 +63,10 @@ class IdbHelper {
      */
     static createNewDatabase() {
         idb.open('restaurants-db', idbVersion, function (upgradeDb) {
-
             if (!upgradeDb.objectStoreNames.contains(idbObj)) {
-                console.log('restaurants-db' + ' has been created!');
                 upgradeDb.createObjectStore(idbObj, { keypath: 'id', autoIncrement: true });
+                console.log('restaurants-db' + ' has been created!');
             }
-            console.log('restaurants-db' + ' has been created!');
         });
     }
 
@@ -81,8 +81,8 @@ class IdbHelper {
                 IdbHelper.openDatabase.then(
                     db => {
                         if (!db) return;
-                        const tx = db.transaction(idbObj, 'readwrite');
-                        const store = tx.objectStore(idbObj);
+                        var tx = db.transaction(idbObj, 'readwrite');
+                        var store = tx.objectStore(idbObj);
                         restaurants.map(restaurant => store.put(restaurant));
                         tx.complete;
                         call();
