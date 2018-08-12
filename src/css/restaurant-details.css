@@ -1,3 +1,4 @@
+
 /* ====================== Restaurant Details ====================== */
 .map-container {
   margin-top: 10px;
@@ -52,6 +53,7 @@
   border-radius: 50px 0 50px;
   width: 100%;
 }
+
 .restaurant-img-small {
   border: #333333;
   border-radius: 50px 0 50px;
@@ -90,7 +92,7 @@
   padding-left: 10px;
   padding-right: 10px;
   display: flex;
-  border-radius: 20px 0px 20px 0px;
+  border-radius: 20px 0 20px 0;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -168,7 +170,5 @@
   }
 }
 
-
 /* Large devices (desktops, 992px and up) */
-@media (min-width: 992px) {
-}
+@media (min-width: 992px) {}

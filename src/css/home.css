@@ -10,6 +10,7 @@
 .filters {
   margin-top: 10px;
 }
+
 .filter-options {
   width: 100%;
   height: 100%;
@@ -105,58 +106,66 @@
   flex-direction: column;
   height: calc(100% - (118px));
 }
+
 .content {
   overflow: auto;
 }
-
 @media (min-width: 548px) {
   .content {
     height: calc(100% - (109px));
   }
 }
-
 @media (min-width: 768px) {
-  .content{
+  .content {
     flex-direction: row;
     display: flex;
   }
-  .filters{
-    order:0;
-    margin-top:0px;
+
+  .filters {
+    order: 0;
+    margin-top: 0;
     max-width: 445px;
     min-width: 445px;
   }
-  .filter-options{
+
+  .filter-options {
     height: 75px;
     overflow: hidden;
-    margin-top:0px;
+    margin-top: 0;
   }
+
   .filter-options select {
-    font-size:0.8rem;
+    font-size: 0.8rem;
   }
+
   .restaurants-list li {
-    min-height: 250px;
-    height: 250px;
+    min-height: 280px;
+    height: 280px;
     width: 180px;
   }
+
   .restaurants-list .restaurant-img {
-   min-height:0;
+    min-height: 0;
   }
+
   .restaurants-list li h2 {
     font-size: 0.8rem;
-    margin-top:10px;
+    margin-top: 10px;
   }
+
   .restaurants-list li p {
     font-size: 0.7rem;
   }
-  .map-container{
-    order:1;
-    width:100%;
-    height:100%;
+
+  .map-container {
+    order: 1;
+    width: 100%;
+    height: 100%;
   }
-  .map{
-   
-    width:100%;
-    height:100%;
+
+  .map {
+
+    width: 100%;
+    height: 100%;
   }
 }

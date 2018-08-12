@@ -311,31 +311,33 @@
     self.idb = exp;
   }
 }());
-/*eslint-env es6*/
 
-var idbObj = 'restaurants';
+
 var idbVersion = 1;
-
-var apiUrlRestaurants = 'https://lit-reaches-37723.herokuapp.com/restaurants';
+var apiUrlRestaurants = 'https://immense-dawn-37401.herokuapp.com/';
 
 class IdbHelper {
+    static get restaurants() { return 'restaurants'; }
+    static get reviews() { return 'reviews'; }
+    static get dbName() { return 'restaurants-db'; }
+
     static get openDatabase() {
         if (!('indexedDB' in window)) {
             console.log('This browser doesn\'t support IndexedDB');
             return;
         }
 
-        var dbPromise = idb.open('restaurants-db', idbVersion);
+        var dbPromise = idb.open(IdbHelper.dbName, idbVersion);
         return dbPromise;
     }
 
     static initialize(callback) {
         IdbHelper.databaseExists((res) => {
-            console.log('restaurants-db' + ' exists? ' + res);
+            console.log(IdbHelper.dbName + ' exists? ' + res);
             if (!res) {
                 IdbHelper.createNewDatabase();
                 IdbHelper.populateDatabase(callback);
-                console.log('restaurants-db' + ' created and populated ');
+                console.log(IdbHelper.dbName + ' created and populated ');
             } else {
                 callback();
             }
@@ -345,12 +347,12 @@ class IdbHelper {
      * Check if idb restaurants index exists
      */
     static databaseExists(callback) {
-        var req = indexedDB.open('restaurants-db');
+        var req = indexedDB.open(IdbHelper.dbName);
         var existed = true;
         req.onsuccess = function () {
             req.result.close();
             if (!existed)
-                indexedDB.deleteDatabase('restaurants-db');
+                indexedDB.deleteDatabase(IdbHelper.dbName);
             callback(existed);
         };
         req.onupgradeneeded = function () {
@@ -362,9 +364,9 @@ class IdbHelper {
      * Delete idb restaurants index if exists
      */
     static deleteOldDatabase() {
-        let DBDeleteRequest = window.indexedDB.deleteDatabase('restaurants-db');
+        let DBDeleteRequest = window.indexedDB.deleteDatabase(IdbHelper.dbName);
         DBDeleteRequest.onerror = function () {
-            console.log('Error deleting database ' + 'restaurants-db');
+            console.log('Error deleting database ' + IdbHelper.dbName);
         };
         DBDeleteRequest.onsuccess = function () {
             console.log('Old db successfully deleted!');
@@ -375,10 +377,11 @@ class IdbHelper {
      * Create new IDB restaurant index
      */
     static createNewDatabase() {
-        idb.open('restaurants-db', idbVersion, function (upgradeDb) {
-            if (!upgradeDb.objectStoreNames.contains(idbObj)) {
-                upgradeDb.createObjectStore(idbObj, { keypath: 'id', autoIncrement: true });
-                console.log('restaurants-db' + ' has been created!');
+        idb.open(IdbHelper.dbName, idbVersion, function (upgradeDb) {
+            if (!upgradeDb.objectStoreNames.contains(IdbHelper.restaurants)) {
+                upgradeDb.createObjectStore(IdbHelper.restaurants, { keypath: 'id', autoIncrement: true });
+                upgradeDb.createObjectStore('reviews', { keypath: 'id', autoIncrement: true });
+                console.log(IdbHelper.dbName + ' has been created!');
             }
         });
     }
@@ -388,33 +391,246 @@ class IdbHelper {
      */
     static populateDatabase(callback) {
         let call = callback;
-        fetch(apiUrlRestaurants)
+        fetch(`${apiUrlRestaurants}restaurants/`)
             .then(res => res.json())
             .then(restaurants => {
                 IdbHelper.openDatabase.then(
                     db => {
                         if (!db) return;
-                        var tx = db.transaction(idbObj, 'readwrite');
-                        var store = tx.objectStore(idbObj);
+                        var tx = db.transaction(IdbHelper.restaurants, 'readwrite');
+                        var store = tx.objectStore(IdbHelper.restaurants);
                         restaurants.map(restaurant => store.put(restaurant));
                         tx.complete;
                         call();
                     })
             });
     }
+    static fetchRestaurantReviewsById(id, callback) {
+        // Fetch all reviews for the specific restaurant
+        const fetchURL = `${apiUrlRestaurants}reviews/?restaurant_id=${id}`;
+        fetch(fetchURL, { method: "GET" })
+            .then(res => res.json())
+            .then(callback)
+            .catch(error => callback(error, null));
+    }
+    static updateCachedRestaurantData(id, updateObj) {
+        IdbHelper.openDatabase.then(
+            db => {
+                console.log("Getting db transaction");
+                const tx = db.transaction(IdbHelper.restaurants, "readwrite");
+                const store = tx
+                    .objectStore(IdbHelper.restaurants)
+                    .get(id)
+                    .then(restaurant => {
+                        if (!restaurant) {
+                            console.log("No cached data found");
+                            return;
+                        }
 
+                        console.log("Specific restaurant obj: ", restaurant);
 
+                        // Update restaurantObj with updateObj details
+                        if (!restaurant) return;
+                        const keys = Object.keys(updateObj);
+                        keys.forEach(k => {
+                            restaurant[k] = updateObj[k];
+                        });
+
+                        // Put the data back in IDB storage
+                        IdbHelper.openDatabase.then(db => {
+                            const tx = db.transaction(IdbHelper.restaurants, "readwrite");
+                            tx.objectStore(IdbHelper.restaurants)
+                                .put(restaurant, id);
+                            return tx.complete;
+                        });
+                    });
+            });
+    }
+
+    static updateCachedRestaurantReview(id, bodyObj) {
+        console.log("updating cache for new review: ", bodyObj);
+        // Push the review into the reviews store
+        IdbHelper.openDatabase.then(
+            db => {
+                const tx = db.transaction(IdbHelper.reviews, "readwrite");
+                const store = tx.objectStore(IdbHelper.reviews);
+                console.log("putting cached review into store");
+                store.put({
+                    id: Date.now(),
+                    restaurant_id: id,
+                    data: bodyObj
+                });
+                console.log("successfully put cached review into store");
+                return tx.complete;
+            });
+    }
 
     /**
      * Read all data from idb restaurants index
      */
     static readAllIdbData() {
         return IdbHelper.openDatabase.then(db => {
-            return db.transaction(idbObj)
-                .objectStore(idbObj).getAll();
+            return db.transaction(IdbHelper.restaurants)
+                .objectStore(IdbHelper.restaurants).getAll();
         });
     }
 
+    static updateFavorite(id, newState, callback) {
+
+        fetch(`${apiUrlRestaurants}reviews/${id}/?is_favorite=${newState}`,
+            { method: "PUT" })
+            .then(response => {
+                // If we don't get a good response then assume we're offline
+                if (!response.ok && !response.redirected) {
+                    return;
+                }
+
+            }).then(() => {
+                IdbHelper.updateCachedRestaurantData(id, { is_favorite: newState });
+                callback(null, { id, value: newState });
+            })
+    }
+    static saveReview(id, name, rating, comment, callback) {
+
+        const body = {
+            restaurant_id: id,
+            name: name,
+            rating: rating,
+            comments: comment,
+            createdAt: Date.now()
+        };
+
+        fetch(`${apiUrlRestaurants}reviews/`, { method: "POST", body: JSON.stringify(body) })
+            .then(response => {
+                if (!response.ok && !response.redirected) {
+                    return response.json();
+                }
+
+            }).then((result) => {
+                if (result === undefined) return;
+                IdbHelper.updateCachedRestaurantReview(result);
+                callback(null, result);
+            })
+
+    }
+
+    static updateCachedRestaurantReview(bodyObj) {
+        console.log("updating cache for new review: ", bodyObj);
+        // Push the review into the reviews store
+        IdbHelper.openDatabase.then(db => {
+            const tx = db.transaction(IdbHelper.reviews, "readwrite");
+            const store = tx.objectStore(IdbHelper.reviews);
+            console.log("putting cached review into store");
+            store.put({
+                id: Date.now(),
+                restaurant_id: bodyObj.restaurant_id,
+                data: bodyObj
+            });
+            console.log("successfully put cached review into store");
+            return tx.complete;
+        });
+    }
+
+
+}
+class ViewHelper {
+    /**
+     * Get a parameter by name from page URL.
+     */
+    static getParameterByName(name, url) {
+        if (!url)
+            url = window.location.href;
+        name = name.replace(/[\[\]]/g, '\\$&');
+        let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results)
+            return null;
+        if (!results[2])
+            return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
+    static fillRestaurantHTML(restaurant) {
+
+        let name = document.getElementsByClassName('restaurant-name')[0];
+        name.innerHTML = restaurant.name;
+
+        let address = document.getElementsByClassName('restaurant-address')[0];
+        if (address !== undefined)
+            address.innerHTML = restaurant.address;
+
+        let image = document.getElementsByClassName('restaurant-figure')[0];
+        image.alt = restaurant.name + ' Restaurant';
+        let picture = RestaurantService.createPictureForRestaurant(restaurant);
+        ViewHelper.addFavoriteIcon(image, restaurant);
+        image.appendChild(picture);
+
+        let cuisine = document.getElementsByClassName('restaurant-cuisine')[0];
+        cuisine.innerHTML = restaurant.cuisine_type;
+    };
+
+    static addFavoriteIcon(el, restaurant) {
+
+        const isFavorite = (restaurant["is_favorite"] && restaurant["is_favorite"].toString() === "true") ? true : false;
+        const favoriteDiv = document.createElement("div");
+        favoriteDiv.className = "favorite-icon";
+        const favorite = document.createElement("button");
+        favorite.style.background = isFavorite
+            ? `url("/images/fav-2.svg") no-repeat`
+            : `url("/images/fav-1.svg") no-repeat`;
+        favorite.innerHTML = isFavorite
+            ? restaurant.name + " is a favorite"
+            : restaurant.name + " is not a favorite";
+        favorite.id = "favorite-icon-" + restaurant.id;
+        favorite.onclick = () => ViewHelper.handleFavoriteClick(restaurant, !isFavorite);
+        favoriteDiv.append(favorite);
+        el.append(favoriteDiv);
+
+    }
+
+    static handleFavoriteClick(restaurant, newState) {
+        // Update properties of the restaurant data object
+        const favorite = document.getElementById("favorite-icon-" + restaurant.id);
+        restaurant["is_favorite"] = newState;
+        favorite.onclick = null;
+
+        IdbHelper.updateFavorite(restaurant.id, newState, (error, resultObj) => {
+            if (error) {
+                console.log("Error updating favorite");
+                return;
+            }
+            const isFavorite = resultObj.value;
+            // Update the button background for the specified favorite
+            const favorite = document.getElementById("favorite-icon-" + resultObj.id);
+            favorite.style.background = isFavorite
+                ? `url("/images/fav-2.svg") no-repeat`
+                : `url("/images/fav-1.svg") no-repeat`;
+
+            favorite.onclick = () => ViewHelper.handleFavoriteClick(restaurant, !isFavorite);
+        });
+    };
+
+    /**
+     * Add restaurant name to the breadcrumb navigation menu
+     */
+    static fillBreadcrumb(restaurant, isInReviewPage = false) {
+        const breadcrumb = document.getElementById("breadcrumb");
+        const li1 = document.createElement("li");
+        const a1 = document.createElement("a");
+        a1.href = "/restaurant.html?id=" + restaurant.id;
+        a1.innerHTML = restaurant.name;
+        li1.appendChild(a1);
+        breadcrumb.appendChild(li1);
+
+        if (isInReviewPage) {
+            const li2 = document.createElement("li");
+            const a2 = document.createElement("a");
+            a2.href = window.location;
+            a2.innerHTML = "Write Review";
+            li2.appendChild(a2);
+            breadcrumb.appendChild(li2);
+        }
+    };
 
 }
 /**
@@ -430,7 +646,7 @@ class RestaurantService {
    */
   static get DATABASE_URL() {
 
-    return 'https://lit-reaches-37723.herokuapp.com/restaurants';
+    return 'https://immense-dawn-37401.herokuapp.com/';
   }
 
 
@@ -451,7 +667,7 @@ class RestaurantService {
   static fetchRestaurantById(id) {
     return RestaurantService.fetchRestaurants()
       .then(restaurants => {
-        var restaurant = restaurants.filter(r => r.id == id);
+        let restaurant = restaurants.filter(r => r.id == id);
         return restaurant[0];
       })
 
@@ -467,7 +683,7 @@ class RestaurantService {
         callback(error, null);
       } else {
         // Filter restaurants to have only given cuisine type
-        var results = restaurants.filter(r => r.cuisine_type == cuisine);
+        let results = restaurants.filter(r => r.cuisine_type == cuisine);
         callback(null, results);
       }
     });
@@ -483,7 +699,7 @@ class RestaurantService {
         callback(error, null);
       } else {
         // Filter restaurants to have only given neighborhood
-        var results = restaurants.filter(r => r.neighborhood == neighborhood);
+        let results = restaurants.filter(r => r.neighborhood == neighborhood);
         callback(null, results);
       }
     });
@@ -494,7 +710,7 @@ class RestaurantService {
    */
   static fetchRestaurantByCuisineAndNeighborhood(restaurants, cuisine, neighborhood) {
 
-    let results = restaurants
+    let results = restaurants;
     if (cuisine !== 'all') { // filter by cuisine
       results = results.filter(r => r.cuisine_type == cuisine);
     }
@@ -508,9 +724,9 @@ class RestaurantService {
    * Fetch all neighborhoods with proper error handling.
    */
   static fetchNeighborhoods(restaurants) {
-    var neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood)
+    let neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
     // Remove duplicates from neighborhoods
-    var uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
+    let uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
     return uniqueNeighborhoods;
   }
 
@@ -519,10 +735,10 @@ class RestaurantService {
    */
   static fetchCuisines(restaurants) {
     // Fetch all restaurants
-    var cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type)
+    let cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
     // Remove duplicates from cuisines
-    var uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
-    return cuisines;
+    let uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
+    return uniqueCuisines;
 
   }
 
@@ -547,7 +763,7 @@ class RestaurantService {
    * Restaurant image URL.
    */
   static imageSrcsetForRestaurant(restaurant, size) {
-    var srcSet = restaurant.photograph === undefined
+    let srcSet = restaurant.photograph === undefined
       ? 'images/undefined-500_small.jpg'
       : size === 'large'
         ? 'images/' + restaurant.photograph + '-1600_1600_large_2x.jpg 2x, images/' + restaurant.photograph + '-800_800_large_1x.jpg'
@@ -556,7 +772,7 @@ class RestaurantService {
           : 'images/' + restaurant.photograph + '-500_small.jpg';
     return srcSet;
   }
-  static async setStaticAllRestaurantsMapImage(restaurants) {
+  static async setStaticAllRestaurantsMapImage(restaurants, onClickStaticMap) {
     let loc = {
       lat: 40.722216,
       lng: -73.987501
@@ -568,21 +784,22 @@ class RestaurantService {
     restaurants.forEach(r => {
       mapURL += `|${r.latlng.lat},${r.latlng.lng}`;
     });
-    mapURL += "&key=AIzaSyCKSc-OLG4ijho4YL41eL3WCHvehx8xADc";
-    //const mapURL = RestaurantService.getStaticAllRestaurantsMapImage(self.restaurants);
+    mapURL += "&key=AIzaSyDoDNWukXLvotuWDEci0WLuv9QXXbyXLF8";
 
     const mapImg = document.createElement("img");
     mapImg.id = "mapImg";
-    mapImg.alt = "Map Image"
-    mapImg.onclick = e => switchToLiveMap();
+    mapImg.alt = "Map Image";
+    mapImg.onclick = () => {
+      if (onClickStaticMap !== undefined) onClickStaticMap();
+      else switchToLiveMap()
+    };
     mapImg.src = mapURL;
     mapDiv.append(mapImg);
-    return mapURL;
   }
   static createPictureForRestaurant(restaurant) {
-    var picture = document.createElement('picture');
+    let picture = document.createElement('picture');
 
-    var largeSource = document.createElement('source');
+    let largeSource = document.createElement('source');
     largeSource.media = '(min-width:750px)';
     largeSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'large');
     largeSource.alt = restaurant.name + ' image';
@@ -590,14 +807,14 @@ class RestaurantService {
 
     picture.appendChild(largeSource);
 
-    var mediumSource = document.createElement('source');
+    let mediumSource = document.createElement('source');
     mediumSource.media = '(min-width:500px)';
     mediumSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'medium');
     mediumSource.alt = restaurant.name + ' image';
     mediumSource.classList.add('restaurant-img-medium');
     picture.appendChild(mediumSource);
 
-    var smallSource = document.createElement('img');
+    let smallSource = document.createElement('img');
     smallSource.src = this.imageSrcsetForRestaurant(restaurant, 'small');
     smallSource.alt = restaurant.name + ' image';
     smallSource.classList.add('restaurant-img-small');
@@ -609,7 +826,7 @@ class RestaurantService {
    * Map marker for a restaurant.
    */
   static mapMarkerForRestaurant(restaurant, map) {
-    var marker = new google
+    let marker = new google
       .maps
       .Marker({
         position: restaurant.latlng,
@@ -622,216 +839,148 @@ class RestaurantService {
   }
 
 }
-let restaurant;
-var map;
-
 /**
  * Initialize Google map, called from HTML.
  */
 document.addEventListener('DOMContentLoaded', () => {
-  IdbHelper.initialize(self.initialize);
+  const vm = new RestaurantInfoViewModel();
+  IdbHelper.initialize(() => vm.initialize());
 
 });
-initialize = () => {
-  var id = getParameterByName('id') || 0;
-  RestaurantService.fetchRestaurantById(id + 1).then(restaurant => {
 
-    self.restaurant = restaurant;
-    fillRestaurantHTML();
-    fillBreadcrumb();
-    initMap();
+class RestaurantInfoViewModel {
 
-  });
-}
-initMap = () => {
-  RestaurantService.setStaticAllRestaurantsMapImage([self.restaurant]);
+  initialize() {
+    let that = this;
+    let id = ViewHelper.getParameterByName('id') || 0;
+    RestaurantService.fetchRestaurantById(id).then(restaurant => {
 
-}
-switchToLiveMap = () => {
-  if (liveMap)
-    return;
+      that.restaurant = restaurant;
+      ViewHelper.fillRestaurantHTML(that.restaurant);
+      if (restaurant.operating_hours) {
+        this.fillRestaurantHoursHTML();
+      }
+      IdbHelper.fetchRestaurantReviewsById(restaurant.id, that.fillReviewsHTML.bind(that));
 
-  document
-    .getElementById("mapImg")
-    .remove();
-  var map = document.getElementsByClassName('map')[0];
-  self.map = new google
-    .maps
-    .Map(map, {
-      zoom: 16,
-      center: self.restaurant.latlng,
-      scrollwheel: false
+      ViewHelper.fillBreadcrumb(that.restaurant);
+      RestaurantService.setStaticAllRestaurantsMapImage(
+        [that.restaurant],
+        that.switchToLiveMap.bind(that)
+      );
     });
+  };
 
-  RestaurantService.mapMarkerForRestaurant(self.restaurant, self.map);
-  liveMap = true;
-}
-window.initRestaurantMap = () => {
+  switchToLiveMap() {
+    if (this.liveMap !== undefined)
+      return;
 
-}
-// /**
-//  * Get current restaurant from page URL.
-//  */
-// fetchRestaurantFromURL = (callback) => {
-//   if (self.restaurant) { // restaurant already fetched!
-//     callback(null, self.restaurant)
-//     return;
-//   }
-//   var id = getParameterByName('id') || 0;
-//   if (!id) { // no id found in URL
-//     error = 'No restaurant id in URL';
-//     callback(error, null);
-//   } else {
-//     DBHelper.fetchRestaurantById(id).then((restaurant) => {
-//       self.restaurant = restaurant;
-//       if (!restaurant) {
-//         console.error(error);
-//         return;
-//       }
-//       fillRestaurantHTML();
-//       callback(null, restaurant)
-//     });
-//   }
-// }
+    document.getElementById("mapImg").remove();
 
-/**
- * Create restaurant HTML and add it to the webpage
- */
-fillRestaurantHTML = (restaurant = self.restaurant) => {
-  var name = document.getElementsByClassName('restaurant-name')[0];
-  name.innerHTML = restaurant.name;
+    let map = document.getElementsByClassName('map')[0];
+    this.map = new google
+      .maps
+      .Map(map, {
+        zoom: 16,
+        center: this.restaurant.latlng,
+        scrollwheel: false
+      });
+
+    RestaurantService.mapMarkerForRestaurant(this.restaurant, this.map);
+    this.liveMap = true;
+  };
+
+  fillRestaurantHoursHTML(operatingHours = this.restaurant.operating_hours) {
+    let hours = document.getElementsByClassName('restaurant-hours')[0];
+    for (let key in operatingHours) {
+      let row = document.createElement('tr');
+
+      let day = document.createElement('td');
+      day.innerHTML = key;
+      row.appendChild(day);
+
+      let time = document.createElement('td');
+      if (operatingHours.hasOwnProperty(key)) {
+        time.innerHTML = operatingHours[key];
+        row.appendChild(time);
+      }
+
+      hours.appendChild(row);
+    }
+  };
 
 
-  var address = document.getElementsByClassName('restaurant-address')[0];
-  address.innerHTML = restaurant.address;
+  fillReviewsHTML(reviews) {
+    let container = document.getElementsByClassName('reviews-container')[0];
+    let title = document.createElement('h3');
+    title.innerHTML = 'Reviews';
+    container.appendChild(title);
 
-  var image = document.getElementsByClassName('restaurant-figure')[0];
-  image.alt = restaurant.name + ' Restaurant';
-  var picture = RestaurantService.createPictureForRestaurant(restaurant);
-  image.appendChild(picture);
+    const addReviewLink = document.createElement("a");
+    addReviewLink.href = `/review.html?id=${this.restaurant.id}`;
+    addReviewLink.innerHTML = "Add Review";
+    container.appendChild(addReviewLink);
 
-  var cuisine = document.getElementsByClassName('restaurant-cuisine')[0];
-  cuisine.innerHTML = restaurant.cuisine_type;
+    if (!reviews) {
 
-  // fill operating hours
-  if (restaurant.operating_hours) {
-    fillRestaurantHoursHTML();
-  }
-  // fill reviews
-  fillReviewsHTML();
-}
+      let noReviews = document.createElement('p');
+      noReviews.innerHTML = 'No reviews yet!';
+      container.appendChild(noReviews);
+      return;
+    }
+    let ul = document.getElementsByClassName('reviews-list')[0];
+    reviews.forEach(review => {
+      ul.appendChild(RestaurantInfoViewModel.createReviewHTML(review));
+    });
+    container.appendChild(ul);
+  };
 
-/**
- * Create restaurant operating hours HTML table and add it to the webpage.
- */
-fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
-  var hours = document.getElementsByClassName('restaurant-hours')[0];
-  for (let key in operatingHours) {
-    var row = document.createElement('tr');
+  /**
+   * Create review HTML and add it to the webpage.
+   */
+  static createReviewHTML(review) {
+    let li = document.createElement('li');
+    li
+      .classList
+      .add('reviewer');
 
-    var day = document.createElement('td');
-    day.innerHTML = key;
-    row.appendChild(day);
+    let header = document.createElement('div');
+    header
+      .classList
+      .add('reviewer-header');
 
-    var time = document.createElement('td');
-    time.innerHTML = operatingHours[key];
-    row.appendChild(time);
+    let name = document.createElement('p');
+    name
+      .classList
+      .add('name');
+    name.innerHTML = review.name;
+    header.appendChild(name);
 
-    hours.appendChild(row);
-  }
-}
+    let date = document.createElement('p');
+    date
+      .classList
+      .add('date');
+    date.innerHTML = new Date(review.createdAt).toDateString();
+    header.appendChild(date);
 
-/**
- * Create all reviews HTML and add them to the webpage.
- */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-  var container = document.getElementsByClassName('reviews-container')[0];
-  var title = document.createElement('h3');
-  title.innerHTML = 'Reviews';
-  container.appendChild(title);
+    li.appendChild(header);
 
-  if (!reviews) {
-    var noReviews = document.createElement('p');
-    noReviews.innerHTML = 'No reviews yet!';
-    container.appendChild(noReviews);
-    return;
-  }
-  var ul = document.getElementsByClassName('reviews-list')[0];
-  reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
-  });
-  container.appendChild(ul);
-}
+    let rating = document.createElement('p');
+    rating
+      .classList
+      .add('rating');
+    rating.innerHTML = 'Rating: ' + review.rating;
+    li.appendChild(rating);
 
-/**
- * Create review HTML and add it to the webpage.
- */
-createReviewHTML = (review) => {
-  var li = document.createElement('li');
-  li
-    .classList
-    .add('reviewer');
+    let comments = document.createElement('p');
+    comments
+      .classList
+      .add('comments');
+    comments.innerHTML = review.comments;
+    li.appendChild(comments);
 
-  var header = document.createElement('div');
-  header
-    .classList
-    .add('reviewer-header');
+    return li;
+  };
 
-  var name = document.createElement('p');
-  name
-    .classList
-    .add('name');
-  name.innerHTML = review.name;
-  header.appendChild(name);
 
-  var date = document.createElement('p');
-  date
-    .classList
-    .add('date');
-  date.innerHTML = review.date;
-  header.appendChild(date);
-
-  li.appendChild(header);
-
-  var rating = document.createElement('p');
-  rating
-    .classList
-    .add('rating');
-  rating.innerHTML = 'Rating: ' + review.rating;
-  li.appendChild(rating);
-
-  var comments = document.createElement('p');
-  comments
-    .classList
-    .add('comments');
-  comments.innerHTML = review.comments;
-  li.appendChild(comments);
-
-  return li;
 }
 
-/**
- * Add restaurant name to the breadcrumb navigation menu
- */
-fillBreadcrumb = (restaurant = self.restaurant) => {
-  var breadcrumb = document.getElementById('breadcrumb');
-  var li = document.createElement('li');
-  li.innerHTML = restaurant.name;
-  breadcrumb.appendChild(li);
-}
-
-/**
- * Get a parameter by name from page URL.
- */
-getParameterByName = (name, url) => {
-  if (!url)
-    url = window.location.href;
-  name = name.replace(/[\[\]]/g, '\\$&');
-  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-    results = regex.exec(url);
-  if (!results)
-    return null;
-  if (!results[2])
-    return '';
-  return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}

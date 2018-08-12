@@ -11,7 +11,7 @@ class RestaurantService {
    */
   static get DATABASE_URL() {
 
-    return 'https://lit-reaches-37723.herokuapp.com/restaurants';
+    return 'https://immense-dawn-37401.herokuapp.com/';
   }
 
 
@@ -32,7 +32,7 @@ class RestaurantService {
   static fetchRestaurantById(id) {
     return RestaurantService.fetchRestaurants()
       .then(restaurants => {
-        var restaurant = restaurants.filter(r => r.id == id);
+        let restaurant = restaurants.filter(r => r.id == id);
         return restaurant[0];
       })
 
@@ -48,7 +48,7 @@ class RestaurantService {
         callback(error, null);
       } else {
         // Filter restaurants to have only given cuisine type
-        var results = restaurants.filter(r => r.cuisine_type == cuisine);
+        let results = restaurants.filter(r => r.cuisine_type == cuisine);
         callback(null, results);
       }
     });
@@ -64,7 +64,7 @@ class RestaurantService {
         callback(error, null);
       } else {
         // Filter restaurants to have only given neighborhood
-        var results = restaurants.filter(r => r.neighborhood == neighborhood);
+        let results = restaurants.filter(r => r.neighborhood == neighborhood);
         callback(null, results);
       }
     });
@@ -75,7 +75,7 @@ class RestaurantService {
    */
   static fetchRestaurantByCuisineAndNeighborhood(restaurants, cuisine, neighborhood) {
 
-    let results = restaurants
+    let results = restaurants;
     if (cuisine !== 'all') { // filter by cuisine
       results = results.filter(r => r.cuisine_type == cuisine);
     }
@@ -89,9 +89,9 @@ class RestaurantService {
    * Fetch all neighborhoods with proper error handling.
    */
   static fetchNeighborhoods(restaurants) {
-    var neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood)
+    let neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
     // Remove duplicates from neighborhoods
-    var uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
+    let uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
     return uniqueNeighborhoods;
   }
 
@@ -100,10 +100,10 @@ class RestaurantService {
    */
   static fetchCuisines(restaurants) {
     // Fetch all restaurants
-    var cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type)
+    let cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
     // Remove duplicates from cuisines
-    var uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
-    return cuisines;
+    let uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
+    return uniqueCuisines;
 
   }
 
@@ -128,7 +128,7 @@ class RestaurantService {
    * Restaurant image URL.
    */
   static imageSrcsetForRestaurant(restaurant, size) {
-    var srcSet = restaurant.photograph === undefined
+    let srcSet = restaurant.photograph === undefined
       ? 'images/undefined-500_small.jpg'
       : size === 'large'
         ? 'images/' + restaurant.photograph + '-1600_1600_large_2x.jpg 2x, images/' + restaurant.photograph + '-800_800_large_1x.jpg'
@@ -137,7 +137,7 @@ class RestaurantService {
           : 'images/' + restaurant.photograph + '-500_small.jpg';
     return srcSet;
   }
-  static async setStaticAllRestaurantsMapImage(restaurants) {
+  static async setStaticAllRestaurantsMapImage(restaurants, onClickStaticMap) {
     let loc = {
       lat: 40.722216,
       lng: -73.987501
@@ -149,21 +149,22 @@ class RestaurantService {
     restaurants.forEach(r => {
       mapURL += `|${r.latlng.lat},${r.latlng.lng}`;
     });
-    mapURL += "&key=AIzaSyCKSc-OLG4ijho4YL41eL3WCHvehx8xADc";
-    //const mapURL = RestaurantService.getStaticAllRestaurantsMapImage(self.restaurants);
+    mapURL += "&key=AIzaSyDoDNWukXLvotuWDEci0WLuv9QXXbyXLF8";
 
     const mapImg = document.createElement("img");
     mapImg.id = "mapImg";
-    mapImg.alt = "Map Image"
-    mapImg.onclick = e => switchToLiveMap();
+    mapImg.alt = "Map Image";
+    mapImg.onclick = () => {
+      if (onClickStaticMap !== undefined) onClickStaticMap();
+      else switchToLiveMap()
+    };
     mapImg.src = mapURL;
     mapDiv.append(mapImg);
-    return mapURL;
   }
   static createPictureForRestaurant(restaurant) {
-    var picture = document.createElement('picture');
+    let picture = document.createElement('picture');
 
-    var largeSource = document.createElement('source');
+    let largeSource = document.createElement('source');
     largeSource.media = '(min-width:750px)';
     largeSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'large');
     largeSource.alt = restaurant.name + ' image';
@@ -171,14 +172,14 @@ class RestaurantService {
 
     picture.appendChild(largeSource);
 
-    var mediumSource = document.createElement('source');
+    let mediumSource = document.createElement('source');
     mediumSource.media = '(min-width:500px)';
     mediumSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'medium');
     mediumSource.alt = restaurant.name + ' image';
     mediumSource.classList.add('restaurant-img-medium');
     picture.appendChild(mediumSource);
 
-    var smallSource = document.createElement('img');
+    let smallSource = document.createElement('img');
     smallSource.src = this.imageSrcsetForRestaurant(restaurant, 'small');
     smallSource.alt = restaurant.name + ' image';
     smallSource.classList.add('restaurant-img-small');
@@ -190,7 +191,7 @@ class RestaurantService {
    * Map marker for a restaurant.
    */
   static mapMarkerForRestaurant(restaurant, map) {
-    var marker = new google
+    let marker = new google
       .maps
       .Marker({
         position: restaurant.latlng,

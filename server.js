@@ -7,6 +7,6 @@ const app = express();
 app.use(compression());
 app.use(express.static(path.join(__dirname, 'build')));
 
-app.listen(8000, () => {
-    console.log('Listening on port 8000!');
+app.listen(2222, () => {
+    console.log('Listening on port 2222!');
 });

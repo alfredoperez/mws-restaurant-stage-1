@@ -55,8 +55,9 @@ const build_css_source = (source) => {
 
 const build_css_index = () => build_css_source('home');
 const build_css_restaurant = () => build_css_source('restaurant-details');
+const build_css_review = () => build_css_source('restaurant-review');
 
-const build_css = gulp.series(build_css_index, build_css_restaurant);
+const build_css = gulp.series(build_css_index, build_css_restaurant, build_css_review);
 
 const build_script = (filename) => {
   return browserify(
@@ -80,6 +81,7 @@ const build_js_source = (source) => {
   return gulp.src([
     `${dirs.src}/js/idb.js`,
     `${dirs.src}/js/idbhelper.js`,
+    `${dirs.src}/js/ViewHelper.js`,
     `${dirs.src}/js/RestaurantService.js`,
     `${dirs.src}/js/${source}.js`,
   ])
@@ -92,8 +94,9 @@ const build_js_source = (source) => {
 
 const build_js_index = () => build_js_source('main');
 const build_js_restaurant = () => build_js_source('restaurant_info');
+const build_js_review = () => build_js_source('restaurant-review');
 
-const build_js = gulp.series(build_js_index, build_js_restaurant);
+const build_js = gulp.series(build_js_index, build_js_restaurant, build_js_review);
 
 const copy_static = () => {
   return gulp.src([

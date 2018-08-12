@@ -4,7 +4,7 @@
   "scripts": {
     "start:dev": "node ./server.js",
     "build": "gulp",
-    "serve": "http-server ./build -p 8888 -c10"
+    "serve": "http-server ./build -p 8444 -c10"
   },
   "author": "Alfredo Perez",
   "license": "ISC",
