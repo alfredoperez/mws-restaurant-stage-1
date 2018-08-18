@@ -1005,7 +1005,7 @@ class RestaurantsViewModel {
     var image = document.createElement('img');
     image.className = 'restaurant-img';
     image.id = 'restaurant-img-' + restaurant.id;
-    image.alt = restaurant.name + ' image';
+    image.alt = restaurant.name + ' image for restaurant ' + restaurant.id;
     //image.srcset = RestaurantService.imageSrcsetForRestaurant(restaurant);
     image.src = RestaurantService.imageUrlForRestaurant(restaurant);
 
