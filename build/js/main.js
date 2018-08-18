@@ -343,6 +343,12 @@ class IdbHelper {
             }
         });
     }
+    static initializeForRestaurant(id, callback) {
+        IdbHelper.initialize(() => {
+            IdbHelper.populateReviewsById(id, callback);
+        });
+
+    }
     /**
      * Check if idb restaurants index exists
      */
@@ -405,12 +411,23 @@ class IdbHelper {
                     })
             });
     }
-    static fetchRestaurantReviewsById(id, callback) {
+    static populateReviewsById(id, callback) {
+        let call = callback;
         // Fetch all reviews for the specific restaurant
         const fetchURL = `${apiUrlRestaurants}reviews/?restaurant_id=${id}`;
         fetch(fetchURL, { method: "GET" })
             .then(res => res.json())
-            .then(callback)
+            .then(reviews => {
+                IdbHelper.openDatabase.then(
+                    db => {
+                        if (!db) return;
+                        var tx = db.transaction(IdbHelper.reviews, 'readwrite');
+                        var store = tx.objectStore(IdbHelper.reviews);
+                        store.put(reviews, id);
+                        tx.complete;
+                        call(reviews);
+                    })
+            })
             .catch(error => callback(error, null));
     }
     static updateCachedRestaurantData(id, updateObj) {
@@ -468,10 +485,10 @@ class IdbHelper {
     /**
      * Read all data from idb restaurants index
      */
-    static readAllIdbData() {
+    static readAllIdbData(entity) {
         return IdbHelper.openDatabase.then(db => {
-            return db.transaction(IdbHelper.restaurants)
-                .objectStore(IdbHelper.restaurants).getAll();
+            return db.transaction(entity)
+                .objectStore(entity).getAll();
         });
     }
 
@@ -501,12 +518,8 @@ class IdbHelper {
         };
 
         fetch(`${apiUrlRestaurants}reviews/`, { method: "POST", body: JSON.stringify(body) })
-            .then(response => {
-                if (!response.ok && !response.redirected) {
-                    return response.json();
-                }
-
-            }).then((result) => {
+            .then(res => res.json())
+            .then((result) => {
                 if (result === undefined) return;
                 IdbHelper.updateCachedRestaurantReview(result);
                 callback(null, result);
@@ -515,20 +528,20 @@ class IdbHelper {
     }
 
     static updateCachedRestaurantReview(bodyObj) {
-        console.log("updating cache for new review: ", bodyObj);
-        // Push the review into the reviews store
-        IdbHelper.openDatabase.then(db => {
-            const tx = db.transaction(IdbHelper.reviews, "readwrite");
-            const store = tx.objectStore(IdbHelper.reviews);
-            console.log("putting cached review into store");
-            store.put({
-                id: Date.now(),
-                restaurant_id: bodyObj.restaurant_id,
-                data: bodyObj
+        IdbHelper.readAllIdbData((previousReviews) => {
+            console.log("updating cache for new review: ", bodyObj);
+            // Push the review into the reviews store
+            IdbHelper.openDatabase.then(db => {
+                const tx = db.transaction(IdbHelper.reviews, "readwrite");
+                const store = tx.objectStore(IdbHelper.reviews);
+                console.log("putting cached review into store");
+                previousReviews.push(bodyObj);
+                store.put(previousReviews, bodyObj.restaurant_id);
+                console.log("successfully put cached review into store");
+                return tx.complete;
             });
-            console.log("successfully put cached review into store");
-            return tx.complete;
-        });
+        })
+
     }
 
 
@@ -552,18 +565,18 @@ class ViewHelper {
 
     static fillRestaurantHTML(restaurant) {
 
+        let image = document.getElementsByClassName('restaurant-figure')[0];
+        image.alt = restaurant.name + ' Restaurant';
+        let picture = RestaurantService.createPictureForRestaurant(restaurant);
+        ViewHelper.addFavoriteIcon(image, restaurant);
+        image.appendChild(picture);
+
         let name = document.getElementsByClassName('restaurant-name')[0];
         name.innerHTML = restaurant.name;
 
         let address = document.getElementsByClassName('restaurant-address')[0];
         if (address !== undefined)
             address.innerHTML = restaurant.address;
-
-        let image = document.getElementsByClassName('restaurant-figure')[0];
-        image.alt = restaurant.name + ' Restaurant';
-        let picture = RestaurantService.createPictureForRestaurant(restaurant);
-        ViewHelper.addFavoriteIcon(image, restaurant);
-        image.appendChild(picture);
 
         let cuisine = document.getElementsByClassName('restaurant-cuisine')[0];
         cuisine.innerHTML = restaurant.cuisine_type;
@@ -654,12 +667,24 @@ class RestaurantService {
    * Fetch all restaurants.
    */
   static fetchRestaurants() {
-    return IdbHelper.readAllIdbData()
+    return IdbHelper.readAllIdbData(IdbHelper.restaurants)
       .then(response => {
 
         return response;
       });
   }
+  /**
+ * Fetch all restaurants.
+ */
+  static fetchReviews(restaurantId) {
+    return IdbHelper.openDatabase.then(db => {
+      return db.transaction(IdbHelper.reviews)
+        .objectStore(IdbHelper.reviews)
+        .get(restaurantId);
+
+    });
+  }
+
 
   /**
    * Fetch a restaurant by its ID.
@@ -669,6 +694,17 @@ class RestaurantService {
       .then(restaurants => {
         let restaurant = restaurants.filter(r => r.id == id);
         return restaurant[0];
+      })
+
+  }
+  /**
+ * Fetch a restaurant by its ID.
+ */
+  static fetchReviewsById(id) {
+    return RestaurantService.fetchReviews()
+      .then(reviews => {
+        let review = reviews.filter(r => r.id == id);
+        return review[0];
       })
 
   }
@@ -768,11 +804,11 @@ class RestaurantService {
       : size === 'large'
         ? 'images/' + restaurant.photograph + '-1600_1600_large_2x.jpg 2x, images/' + restaurant.photograph + '-800_800_large_1x.jpg'
         : size === 'medium'
-          ? 'images/' + restaurant.photograph + '-medium.jpg'
+          ? 'images/' + restaurant.photograph + '-500_medium.jpg'
           : 'images/' + restaurant.photograph + '-500_small.jpg';
     return srcSet;
   }
-  static async setStaticAllRestaurantsMapImage(restaurants, onClickStaticMap) {
+  static setStaticAllRestaurantsMapImage(restaurants, onClickStaticMap) {
     let loc = {
       lat: 40.722216,
       lng: -73.987501
@@ -780,27 +816,28 @@ class RestaurantService {
     const mapDiv = document.getElementById("map");
     // Create static map image for initial display
     let mapURL = `https://maps.googleapis.com/maps/api/staticmap?center=${
-      loc.lat},${loc.lng}&zoom=12&size=400x400&markers=color:red`;
+      loc.lat},${loc.lng}&zoom=12&size=${mapDiv.clientWidth}x${mapDiv.clientHeight}&markers=color:red`;
     restaurants.forEach(r => {
       mapURL += `|${r.latlng.lat},${r.latlng.lng}`;
     });
     mapURL += "&key=AIzaSyDoDNWukXLvotuWDEci0WLuv9QXXbyXLF8";
 
-    const mapImg = document.createElement("img");
-    mapImg.id = "mapImg";
-    mapImg.alt = "Map Image";
-    mapImg.onclick = () => {
+
+    mapDiv.alt = "Map Image";
+    mapDiv.onclick = () => {
       if (onClickStaticMap !== undefined) onClickStaticMap();
       else switchToLiveMap()
     };
-    mapImg.src = mapURL;
-    mapDiv.append(mapImg);
+    mapDiv.style.backgroundImage = `url(${mapURL})`;
+    mapDiv.style.backgroundSize = 'cover';
+    mapDiv.style.backgroundRepeat = 'no-repeat';
+    mapDiv.style.backgroundPosition = '50% 50%';
   }
   static createPictureForRestaurant(restaurant) {
     let picture = document.createElement('picture');
 
     let largeSource = document.createElement('source');
-    largeSource.media = '(min-width:750px)';
+    largeSource.media = '(min-width:1000px)';
     largeSource.srcset = this.imageSrcsetForRestaurant(restaurant, 'large');
     largeSource.alt = restaurant.name + ' image';
     largeSource.classList.add('restaurant-img-large');
@@ -899,9 +936,7 @@ class RestaurantsViewModel {
     if (this.liveMap)
       return;
 
-    document
-      .getElementById("mapImg")
-      .remove();
+
     let loc = {
       lat: 40.722216,
       lng: -73.987501

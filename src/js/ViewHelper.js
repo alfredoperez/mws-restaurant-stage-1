@@ -17,18 +17,18 @@ class ViewHelper {
 
     static fillRestaurantHTML(restaurant) {
 
+        let image = document.getElementsByClassName('restaurant-figure')[0];
+        image.alt = restaurant.name + ' Restaurant';
+        let picture = RestaurantService.createPictureForRestaurant(restaurant);
+        ViewHelper.addFavoriteIcon(image, restaurant);
+        image.appendChild(picture);
+
         let name = document.getElementsByClassName('restaurant-name')[0];
         name.innerHTML = restaurant.name;
 
         let address = document.getElementsByClassName('restaurant-address')[0];
         if (address !== undefined)
             address.innerHTML = restaurant.address;
-
-        let image = document.getElementsByClassName('restaurant-figure')[0];
-        image.alt = restaurant.name + ' Restaurant';
-        let picture = RestaurantService.createPictureForRestaurant(restaurant);
-        ViewHelper.addFavoriteIcon(image, restaurant);
-        image.appendChild(picture);
 
         let cuisine = document.getElementsByClassName('restaurant-cuisine')[0];
         cuisine.innerHTML = restaurant.cuisine_type;

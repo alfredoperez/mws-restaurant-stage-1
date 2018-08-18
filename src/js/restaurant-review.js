@@ -45,7 +45,7 @@ class RestaurantReviewViewModel {
             const btn = document.getElementById("btnSaveReview");
             btn.onclick = event => saveReview();
 
-            window.location.href = "/restaurant.html?id=" + self.restaurant.id;
+            window.location.href = "/restaurant.html?id=" + review.restaurant_id;
         });
     }
 

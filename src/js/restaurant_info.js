@@ -3,37 +3,41 @@
  */
 document.addEventListener('DOMContentLoaded', () => {
   const vm = new RestaurantInfoViewModel();
-  IdbHelper.initialize(() => vm.initialize());
+  let id = ViewHelper.getParameterByName('id') || 0;
+  IdbHelper.initializeForRestaurant(id, () => vm.initialize());
 
 });
 
 class RestaurantInfoViewModel {
 
-  initialize() {
+  initialize(reviews) {
     let that = this;
     let id = ViewHelper.getParameterByName('id') || 0;
-    RestaurantService.fetchRestaurantById(id).then(restaurant => {
 
-      that.restaurant = restaurant;
-      ViewHelper.fillRestaurantHTML(that.restaurant);
-      if (restaurant.operating_hours) {
-        this.fillRestaurantHoursHTML();
-      }
-      IdbHelper.fetchRestaurantReviewsById(restaurant.id, that.fillReviewsHTML.bind(that));
+    RestaurantService.fetchRestaurantById(id)
+      .then(restaurant => {
 
-      ViewHelper.fillBreadcrumb(that.restaurant);
-      RestaurantService.setStaticAllRestaurantsMapImage(
-        [that.restaurant],
-        that.switchToLiveMap.bind(that)
-      );
-    });
+        that.restaurant = restaurant;
+        ViewHelper.fillRestaurantHTML(that.restaurant);
+        if (restaurant.operating_hours) {
+          this.fillRestaurantHoursHTML();
+        }
+        ViewHelper.fillBreadcrumb(that.restaurant);
+        RestaurantService.fetchReviews(id).then((reviews) => {
+          that.fillReviewsHTML(reviews);
+          setTimeout(() => {
+            RestaurantService.setStaticAllRestaurantsMapImage(
+              [that.restaurant],
+              that.switchToLiveMap.bind(that)
+            );
+          }, 15);
+        });
+      });
   };
 
   switchToLiveMap() {
     if (this.liveMap !== undefined)
       return;
-
-    document.getElementById("mapImg").remove();
 
     let map = document.getElementsByClassName('map')[0];
     this.map = new google
@@ -77,6 +81,7 @@ class RestaurantInfoViewModel {
     const addReviewLink = document.createElement("a");
     addReviewLink.href = `/review.html?id=${this.restaurant.id}`;
     addReviewLink.innerHTML = "Add Review";
+    addReviewLink.className = "add-review-button";
     container.appendChild(addReviewLink);
 
     if (!reviews) {

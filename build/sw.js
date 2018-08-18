@@ -131,7 +131,7 @@ function serve(event, cacheRequest) {
 
 function serveMap(request) {
     return caches.open(staticCacheName).then((cache) => {
-        return cache.match(request.url).then((response) => {
+        return cache.match(request.url, { ignoreSearch: true }).then((response) => {
             var fetchPromise = fetch(request).then((networkResponse) => {
                 cache.put(request.url, networkResponse.clone());
                 return networkResponse;

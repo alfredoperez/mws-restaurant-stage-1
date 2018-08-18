@@ -58,9 +58,7 @@ class RestaurantsViewModel {
     if (this.liveMap)
       return;
 
-    document
-      .getElementById("mapImg")
-      .remove();
+
     let loc = {
       lat: 40.722216,
       lng: -73.987501

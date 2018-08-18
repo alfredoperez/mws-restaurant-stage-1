@@ -30,6 +30,12 @@ class IdbHelper {
             }
         });
     }
+    static initializeForRestaurant(id, callback) {
+        IdbHelper.initialize(() => {
+            IdbHelper.populateReviewsById(id, callback);
+        });
+
+    }
     /**
      * Check if idb restaurants index exists
      */
@@ -92,12 +98,23 @@ class IdbHelper {
                     })
             });
     }
-    static fetchRestaurantReviewsById(id, callback) {
+    static populateReviewsById(id, callback) {
+        let call = callback;
         // Fetch all reviews for the specific restaurant
         const fetchURL = `${apiUrlRestaurants}reviews/?restaurant_id=${id}`;
         fetch(fetchURL, { method: "GET" })
             .then(res => res.json())
-            .then(callback)
+            .then(reviews => {
+                IdbHelper.openDatabase.then(
+                    db => {
+                        if (!db) return;
+                        var tx = db.transaction(IdbHelper.reviews, 'readwrite');
+                        var store = tx.objectStore(IdbHelper.reviews);
+                        store.put(reviews, id);
+                        tx.complete;
+                        call(reviews);
+                    })
+            })
             .catch(error => callback(error, null));
     }
     static updateCachedRestaurantData(id, updateObj) {
@@ -155,10 +172,10 @@ class IdbHelper {
     /**
      * Read all data from idb restaurants index
      */
-    static readAllIdbData() {
+    static readAllIdbData(entity) {
         return IdbHelper.openDatabase.then(db => {
-            return db.transaction(IdbHelper.restaurants)
-                .objectStore(IdbHelper.restaurants).getAll();
+            return db.transaction(entity)
+                .objectStore(entity).getAll();
         });
     }
 
@@ -188,12 +205,8 @@ class IdbHelper {
         };
 
         fetch(`${apiUrlRestaurants}reviews/`, { method: "POST", body: JSON.stringify(body) })
-            .then(response => {
-                if (!response.ok && !response.redirected) {
-                    return response.json();
-                }
-
-            }).then((result) => {
+            .then(res => res.json())
+            .then((result) => {
                 if (result === undefined) return;
                 IdbHelper.updateCachedRestaurantReview(result);
                 callback(null, result);
@@ -202,20 +215,20 @@ class IdbHelper {
     }
 
     static updateCachedRestaurantReview(bodyObj) {
-        console.log("updating cache for new review: ", bodyObj);
-        // Push the review into the reviews store
-        IdbHelper.openDatabase.then(db => {
-            const tx = db.transaction(IdbHelper.reviews, "readwrite");
-            const store = tx.objectStore(IdbHelper.reviews);
-            console.log("putting cached review into store");
-            store.put({
-                id: Date.now(),
-                restaurant_id: bodyObj.restaurant_id,
-                data: bodyObj
+        IdbHelper.readAllIdbData((previousReviews) => {
+            console.log("updating cache for new review: ", bodyObj);
+            // Push the review into the reviews store
+            IdbHelper.openDatabase.then(db => {
+                const tx = db.transaction(IdbHelper.reviews, "readwrite");
+                const store = tx.objectStore(IdbHelper.reviews);
+                console.log("putting cached review into store");
+                previousReviews.push(bodyObj);
+                store.put(previousReviews, bodyObj.restaurant_id);
+                console.log("successfully put cached review into store");
+                return tx.complete;
             });
-            console.log("successfully put cached review into store");
-            return tx.complete;
-        });
+        })
+
     }
 
 
